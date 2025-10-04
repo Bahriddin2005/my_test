@@ -6,9 +6,6 @@ from django.utils import timezone
 from django.db import transaction
 from django.core.paginator import Paginator
 import json
-import pandas as pd
-from io import BytesIO
-import openpyxl
 import random
 from .models import Test, Question, Choice, TestAttempt, Answer, TestResult, TestRetakeRequest
 from accounts.models import User
@@ -406,37 +403,57 @@ def export_results(request, test_id):
         return JsonResponse({'error': 'Access denied'}, status=403)
     
     test = get_object_or_404(Test, id=test_id, created_by=request.user)
-    # Sinf bo'yicha tartiblab olish
     attempts = TestAttempt.objects.filter(test=test, is_completed=True).select_related('student', 'result').order_by('student__grade', 'student__class_name', 'student__first_name', 'student__last_name')
     
-    # Prepare data for Excel
-    data = []
-    for attempt in attempts:
-        data.append({
-            'Student Username': attempt.student.username,
-            'First Name': attempt.student.first_name,
-            'Last Name': attempt.student.last_name,
-            'Student ID': attempt.student.student_id or '',
-            'Grade': attempt.student.grade or '',
-            'Class': attempt.student.class_name or '',
-            'Score': attempt.score,
-            'Total Points': attempt.total_points,
-            'Percentage': attempt.percentage,
-            'Grade Result': attempt.result.grade if hasattr(attempt, 'result') else '',
-            'Correct Answers': attempt.result.correct_answers if hasattr(attempt, 'result') else 0,
-            'Incorrect Answers': attempt.result.incorrect_answers if hasattr(attempt, 'result') else 0,
-            'Unanswered': attempt.result.unanswered if hasattr(attempt, 'result') else 0,
-            'Time Taken': str(attempt.time_taken),
-            'Finished At': attempt.finished_at.strftime('%Y-%m-%d %H:%M:%S')
-        })
+    # Excel faylini openpyxl bilan yaratish
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill
     
-    # Create Excel file
-    df = pd.DataFrame(data)
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Test Results"
+    
+    # Header qo'shish
+    headers = [
+        'Student Username', 'First Name', 'Last Name', 'Student ID', 'Grade', 
+        'Class', 'Score', 'Total Points', 'Percentage', 'Grade Result',
+        'Correct Answers', 'Incorrect Answers', 'Unanswered', 'Time Taken', 'Finished At'
+    ]
+    
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.font = Font(bold=True)
+        cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+    
+    # Ma'lumotlarni qo'shish
+    for row, attempt in enumerate(attempts, 2):
+        data = [
+            attempt.student.username,
+            attempt.student.first_name,
+            attempt.student.last_name,
+            attempt.student.student_id or '',
+            attempt.student.grade or '',
+            attempt.student.class_name or '',
+            attempt.score,
+            attempt.total_points,
+            attempt.percentage,
+            attempt.result.grade if hasattr(attempt, 'result') else '',
+            attempt.result.correct_answers if hasattr(attempt, 'result') else 0,
+            attempt.result.incorrect_answers if hasattr(attempt, 'result') else 0,
+            attempt.result.unanswered if hasattr(attempt, 'result') else 0,
+            str(attempt.time_taken),
+            attempt.finished_at.strftime('%Y-%m-%d %H:%M:%S')
+        ]
+        
+        for col, value in enumerate(data, 1):
+            ws.cell(row=row, column=col, value=value)
+    
+    # Excel faylini qaytarish
+    from django.http import HttpResponse
+    from io import BytesIO
+    
     output = BytesIO()
-    
-    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        df.to_excel(writer, sheet_name='Test Results', index=False)
-    
+    wb.save(output)
     output.seek(0)
     
     response = HttpResponse(
@@ -461,41 +478,59 @@ def upload_questions(request, test_id):
             if not excel_file:
                 return JsonResponse({'error': 'No file uploaded'}, status=400)
             
-            # Read Excel file
-            df = pd.read_excel(excel_file)
+            # Excel faylini openpyxl bilan o'qish
+            from openpyxl import load_workbook
             
-            # Validate required columns
+            wb = load_workbook(excel_file)
+            ws = wb.active
+            
+            # Header qatorini o'qish
+            headers = []
+            for cell in ws[1]:
+                if cell.value:
+                    headers.append(cell.value.lower().replace(' ', '_'))
+            
+            # Kerakli ustunlarni tekshirish
             required_columns = ['question_text', 'question_type', 'points']
             for col in required_columns:
-                if col not in df.columns:
+                if col not in headers:
                     return JsonResponse({'error': f'Missing column: {col}'}, status=400)
             
+            questions_created = 0
+            
             with transaction.atomic():
-                for index, row in df.iterrows():
+                for row_num, row in enumerate(ws.iter_rows(min_row=2, values_only=True), 1):
+                    if not row[0]:  # question_text bo'sh bo'lsa
+                        continue
+                    
+                    row_data = dict(zip(headers, row))
+                    
                     question = Question.objects.create(
                         test=test,
-                        question_text=row['question_text'],
-                        question_type=row['question_type'],
-                        points=float(row.get('points', 1.0)),
-                        order=index + 1,
-                        explanation=row.get('explanation', '')
+                        question_text=row_data['question_text'],
+                        question_type=row_data['question_type'],
+                        points=float(row_data.get('points', 1.0)),
+                        order=row_num,
+                        explanation=row_data.get('explanation', '')
                     )
                     
-                    # Create choices for multiple choice questions
-                    if row['question_type'] in ['single_choice', 'multiple_choice']:
-                        for i in range(1, 6):  # Support up to 5 choices
-                            choice_col = f'choice_{i}'
-                            correct_col = f'choice_{i}_correct'
+                    # Javob variantlarini qo'shish
+                    if row_data['question_type'] in ['single_choice', 'multiple_choice']:
+                        for i in range(1, 6):  # 5 tagacha variant
+                            choice_key = f'choice_{i}'
+                            correct_key = f'choice_{i}_correct'
                             
-                            if choice_col in df.columns and pd.notna(row[choice_col]):
-                                is_correct = correct_col in df.columns and bool(row[correct_col])
+                            if choice_key in row_data and row_data[choice_key]:
+                                is_correct = bool(row_data.get(correct_key, False))
                                 Choice.objects.create(
                                     question=question,
-                                    choice_text=row[choice_col],
+                                    choice_text=row_data[choice_key],
                                     is_correct=is_correct
                                 )
+                    
+                    questions_created += 1
             
-            return JsonResponse({'message': f'{len(df)} questions uploaded successfully'})
+            return JsonResponse({'message': f'{questions_created} questions uploaded successfully'})
             
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
