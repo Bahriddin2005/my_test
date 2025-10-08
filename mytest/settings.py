@@ -20,14 +20,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
+DEBUG = False #os.environ.get('DEBUG', 'True').lower() == 'true'
 
 # Production domains
 ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    'your-domain.com',
-    'www.your-domain.com',
+    '*'
+    # 'localhost',
+    # '127.0.0.1',
+    # 'your-domain.com',
+    # 'www.your-domain.com',
 ]
 
 # Application definition
@@ -109,7 +110,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
