@@ -15,11 +15,9 @@ urlpatterns = [
     path('<int:test_id>/export/', views.export_results, name='export_results'),
     path('<int:test_id>/upload-questions/', views.upload_questions, name='upload_questions'),
     path('all-results/', views.all_results_view, name='all_results'),
-    # Retake URLs
     path('<int:test_id>/request-retake/', views.request_retake_view, name='request_retake'),
     path('retake-requests/', views.retake_requests_view, name='retake_requests'),
     path('retake-requests/<int:request_id>/handle/', views.handle_retake_request_view, name='handle_retake_request'),
-    # Admin student test management
     path('student-management/', views.student_test_management, name='student_test_management'),
     path('<int:test_id>/open-for-student/<int:student_id>/', views.open_test_for_student, name='open_test_for_student'),
 ]

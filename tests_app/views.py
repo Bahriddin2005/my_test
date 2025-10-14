@@ -9,6 +9,8 @@ import json
 import random
 from .models import Test, Question, Choice, TestAttempt, Answer, TestResult, TestRetakeRequest
 from accounts.models import User
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill
 
 @login_required
 def test_list_view(request):
@@ -20,7 +22,6 @@ def test_list_view(request):
                 grade=request.user.grade
             ).select_related('created_by').order_by('-created_at')
             
-            # Add attempt information
             test_data = []
             for test in tests:
                 attempt = TestAttempt.objects.filter(test=test, student=request.user).first()
@@ -72,7 +73,6 @@ def test_list_view(request):
                 'user_role': 'teacher'
             })
     
-    # Return the HTML template for GET requests
     return render(request, 'tests/test_list.html')
 
 @login_required
@@ -85,14 +85,12 @@ def create_test(request):
     try:
         data = json.loads(request.body)
         
-        # Validate required fields
         required_fields = ['title', 'subject', 'grade', 'time_limit']
         for field in required_fields:
             if not data.get(field):
                 return JsonResponse({'error': f'{field} is required'}, status=400)
         
         with transaction.atomic():
-            # Create test
             test = Test.objects.create(
                 title=data['title'],
                 description=data.get('description', ''),
@@ -107,7 +105,6 @@ def create_test(request):
                 shuffle_questions=data.get('shuffle_questions', False)
             )
             
-            # Create questions if provided
             questions_data = data.get('questions', [])
             for i, q_data in enumerate(questions_data):
                 question = Question.objects.create(
@@ -119,7 +116,6 @@ def create_test(request):
                     explanation=q_data.get('explanation', '')
                 )
                 
-                # Create choices for multiple choice questions
                 if q_data['question_type'] in ['single_choice', 'multiple_choice']:
                     choices_data = q_data.get('choices', [])
                     for choice_data in choices_data:
@@ -147,11 +143,9 @@ def take_test_view(request, test_id):
     
     test = get_object_or_404(Test, id=test_id, is_active=True)
     
-    # Check if student can take this test
     if test.grade != request.user.grade:
         return JsonResponse({'error': 'This test is not for your grade'}, status=403)
     
-    # Check time limits
     now = timezone.now()
     if test.start_time and now < test.start_time:
         return JsonResponse({'error': 'Test has not started yet'}, status=403)
@@ -160,7 +154,6 @@ def take_test_view(request, test_id):
         return JsonResponse({'error': 'Test has ended'}, status=403)
     
     if request.method == 'POST':
-        # Start new attempt
         existing_attempt = TestAttempt.objects.filter(test=test, student=request.user).first()
         if existing_attempt and existing_attempt.is_completed:
             return JsonResponse({'error': 'You have already completed this test'}, status=400)
@@ -170,7 +163,6 @@ def take_test_view(request, test_id):
         else:
             attempt = existing_attempt
         
-        # Get questions
         questions = test.questions.all().order_by('order')
         if test.shuffle_questions:
             questions = questions.order_by('?')
@@ -218,17 +210,14 @@ def submit_answer(request, attempt_id):
         question_id = data.get('question_id')
         question = get_object_or_404(Question, id=question_id, test=attempt.test)
         
-        # Get or create answer
         answer, created = Answer.objects.get_or_create(
             attempt=attempt,
             question=question
         )
         
-        # Clear previous selections
         answer.selected_choices.clear()
         answer.text_answer = ''
         
-        # Save new answer based on question type
         if question.question_type == 'text_answer':
             answer.text_answer = data.get('text_answer', '')
         else:
@@ -259,15 +248,12 @@ def finish_test(request, attempt_id):
         if attempt.is_completed:
             return JsonResponse({'error': 'Test already completed'}, status=400)
         
-        # Mark attempt as completed
         attempt.finished_at = timezone.now()
         attempt.is_completed = True
         attempt.time_taken = attempt.finished_at - attempt.started_at
         
-        # Calculate score
         results = attempt.calculate_score()
         
-        # Detailed answer analysis
         correct_answers = 0
         incorrect_answers = 0
         unanswered = 0
@@ -282,7 +268,6 @@ def finish_test(request, attempt_id):
             else:
                 unanswered += 1
         
-        # Create test result
         test_result = TestResult.objects.create(
             attempt=attempt,
             correct_answers=correct_answers,
@@ -294,7 +279,6 @@ def finish_test(request, attempt_id):
         
         attempt.save()
         
-        # Prepare response with completion info
         completion_message = "Test yakunlandi!"
         if results.get('all_answered', False):
             completion_message = f"Ajoyib! Barcha {results['total_questions']} ta savolga javob berdingiz!"
@@ -327,7 +311,6 @@ def test_results_view(request, test_id):
     """View test results - Teachers can see all, students see their own"""
     test = get_object_or_404(Test, id=test_id)
     
-    # Check if it's a JSON request
     if request.headers.get('Accept') == 'application/json':
         if request.user.role == 'student':
             if test.grade != request.user.grade:
@@ -337,7 +320,6 @@ def test_results_view(request, test_id):
             if not attempt or not attempt.is_completed:
                 return JsonResponse({'error': 'Test not completed'}, status=404)
             
-            # Calculate detailed results using the same logic as finish_test
             results = attempt.calculate_score() if hasattr(attempt, 'calculate_score') else {}
             correct_answers = attempt.result.correct_answers if hasattr(attempt, 'result') else 0
             incorrect_answers = attempt.result.incorrect_answers if hasattr(attempt, 'result') else 0
@@ -361,7 +343,6 @@ def test_results_view(request, test_id):
             return JsonResponse({'result': result_data})
         
         elif request.user.role == 'teacher' and test.created_by == request.user:
-            # Sinf bo'yicha tartiblab olish
             attempts = TestAttempt.objects.filter(test=test, is_completed=True).select_related('student', 'result').order_by('student__grade', 'student__class_name', 'student__first_name', 'student__last_name')
             
             results_data = []
@@ -390,7 +371,6 @@ def test_results_view(request, test_id):
         else:
             return JsonResponse({'error': 'Access denied'}, status=403)
     
-    # Return HTML template for regular requests
     return render(request, 'tests/test_results.html', {
         'test': test,
         'user_role': request.user.role
@@ -405,9 +385,7 @@ def export_results(request, test_id):
     test = get_object_or_404(Test, id=test_id, created_by=request.user)
     attempts = TestAttempt.objects.filter(test=test, is_completed=True).select_related('student', 'result').order_by('student__grade', 'student__class_name', 'student__first_name', 'student__last_name')
     
-    # Excel faylini openpyxl bilan yaratish
-    from openpyxl import Workbook
-    from openpyxl.styles import Font, PatternFill
+    
     
     wb = Workbook()
     ws = wb.active

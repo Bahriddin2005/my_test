@@ -10,6 +10,9 @@ from django.utils import timezone
 from .models import User, VerificationRequest
 import json
 
+def home_view(request):
+    return render(request, 'base.html')
+
 def signup_view(request):
     if request.method == 'POST':
         try:
