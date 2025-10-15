@@ -1,36 +1,27 @@
 # Django
-*.log
-*.pot
 *.pyc
-__pycache__/
-local_settings.py
+*__pycache__/
 db.sqlite3
-db.sqlite3-journal
+media/
+staticfiles/
 
-# Environment variables
+# Environment
 .env
-.venv
-env/
 venv/
+.venv/
 
-# Static files
-/staticfiles/
-/static/admin/
-/static/rest_framework/
-
-# Media files
-/media/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+# Logs
+logs/
+*.log
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Deployment
-*.service
-nginx.conf
+# IDE
+.vscode/
+.idea/
+
+# Temporary files
+*.sock
+*.pid
