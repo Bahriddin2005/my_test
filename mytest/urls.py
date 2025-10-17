@@ -3,13 +3,15 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.shortcuts import render
-from accounts.urls import *
-from tests_app.urls import *
-from accounts.views import home_view
+# from accounts.urls import *
+# from tests_app.urls import *
+
+def home_view(request):
+    return render(request, 'home.html')
 
 urlpatterns = [
+    path("", home_view, name='home'),
     path("admin/", admin.site.urls),
-    path('', home_view, name='home'),
     path('accounts/', include('accounts.urls')),
     path('tests/', include('tests_app.urls'))
 ]

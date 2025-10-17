@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils import timezone
+from django import forms
+from django.contrib.auth.forms import UserChangeForm
 
 # Faqat mavjud modellarni import qilamiz
 try:
@@ -9,28 +11,48 @@ except ImportError:
     User = None
     VerificationRequest = None
 
-# CustomUser ni import qilmaymiz chunki mavjud emas
-
 # Agar User modeli mavjud bo'lsa va custom fieldlarga ega bo'lsa
 if User and hasattr(User, 'role'):
+    
+    class CustomUserChangeForm(UserChangeForm):
+        class Meta(UserChangeForm.Meta):
+            model = User
+            fields = '__all__'
+    
     class CustomUserAdmin(UserAdmin):
         model = User
+        form = CustomUserChangeForm
+        
         list_display = ['username', 'email', 'role', 'is_verified', 'school_email_verified', 'student_id', 'is_active']
         list_filter = ['role', 'is_verified', 'school_email_verified', 'is_active', 'grade']
         search_fields = ['username', 'email', 'student_id', 'first_name', 'last_name']
         
-        fieldsets = UserAdmin.fieldsets + (
+        # To'liq qayta aniqlangan fieldsets
+        fieldsets = (
+            (None, {'fields': ('username', 'password')}),
+            ('Personal info', {'fields': ('first_name', 'last_name', 'email')}),
+            ('Permissions', {
+                'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
+            }),
+            ('Important dates', {'fields': ('last_login',)}),  # Faqat last_login
             ('School Info', {
                 'fields': ('role', 'student_id', 'is_verified', 'school_email_verified', 
                           'phone_number', 'class_name', 'grade', 'subject')
             }),
         )
         
-        add_fieldsets = UserAdmin.add_fieldsets + (
+        add_fieldsets = (
+            (None, {
+                'classes': ('wide',),
+                'fields': ('username', 'password1', 'password2'),
+            }),
+            ('Personal info', {'fields': ('first_name', 'last_name', 'email')}),
             ('School Info', {
-                'fields': ('role', 'student_id', 'email', 'phone_number', 'class_name', 'grade', 'subject')
+                'fields': ('role', 'student_id', 'phone_number', 'class_name', 'grade', 'subject')
             }),
         )
+        
+        filter_horizontal = ('groups', 'user_permissions',)
     
     admin.site.register(User, CustomUserAdmin)
 

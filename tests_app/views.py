@@ -73,7 +73,7 @@ def test_list_view(request):
                 'user_role': 'teacher'
             })
     
-    return render(request, 'tests/test_list.html')
+    return render(request, 'tests_app/test_list.html')
 
 @login_required
 @require_http_methods(["POST"])
@@ -191,7 +191,7 @@ def take_test_view(request, test_id):
             'started_at': attempt.started_at.isoformat()
         })
     
-    return render(request, 'tests/take_test.html', {'test': test})
+    return render(request, 'tests_app/take_test.html', {'test': test})
 
 @login_required
 @require_http_methods(["POST"])
@@ -371,7 +371,7 @@ def test_results_view(request, test_id):
         else:
             return JsonResponse({'error': 'Access denied'}, status=403)
     
-    return render(request, 'tests/test_results.html', {
+    return render(request, 'tests_app/test_results.html', {
         'test': test,
         'user_role': request.user.role
     })
@@ -513,7 +513,7 @@ def upload_questions(request, test_id):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
     
-    return render(request, 'tests/upload_questions.html', {'test': test})
+    return render(request, 'tests_app/upload_questions.html', {'test': test})
 
 @login_required
 def create_test_view(request):
@@ -522,7 +522,7 @@ def create_test_view(request):
         return JsonResponse({'error': 'Access denied'}, status=403)
     
     if request.method == 'GET':
-        return render(request, 'tests/create_test.html')
+        return render(request, 'tests_app/create_test.html')
     
     if request.method == 'POST':
         try:
@@ -672,7 +672,7 @@ def all_results_view(request):
         
         return JsonResponse({'results': results_data})
     
-    return render(request, 'tests/all_results.html', {
+    return render(request, 'tests_app/all_results.html', {
         'user_role': request.user.role
     })
 
@@ -763,7 +763,7 @@ def retake_requests_view(request):
         })
     
     # HTML template
-    return render(request, 'tests/retake_requests.html')
+    return render(request, 'tests_app/retake_requests.html')
 
 @login_required
 @require_http_methods(["POST"])
@@ -899,7 +899,7 @@ def student_test_management(request):
         'all_tests': tests
     }
     
-    return render(request, 'tests/student_test_management.html', context)
+    return render(request, 'tests_app/student_test_management.html', context)
 
 @login_required
 def edit_test_view(request, test_id):
@@ -1014,7 +1014,7 @@ def edit_test_view(request, test_id):
         'test': test,
         'questions': questions_data
     }
-    return render(request, 'tests/edit_test.html', context)
+    return render(request, 'tests_app/edit_test.html', context)
 
 @login_required
 def start_test_view(request, test_id):
@@ -1027,4 +1027,4 @@ def start_test_view(request, test_id):
         'test': test,
         'questions': questions,
     }
-    return render(request, 'tests/start_test.html', context)
+    return render(request, 'tests_app/start_test.html', context)

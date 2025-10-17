@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Test Boshlash - {{ test.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="glass-card p-4 mb-4">
+                <h2 class="text-white mb-3">
+                    <i class="fas fa-play-circle text-success me-2"></i>
+                    Test Boshlash
+                </h2>
+                <h3 class="text-white-50">{{ test.title }}</h3>
+                <p class="text-white-50 mb-3">{{ test.description }}</p>
+                
+                <div class="row text-white-50">
+                    <div class="col-md-3">
+                        <i class="fas fa-clock me-2"></i>
+                        Vaqt: {{ test.time_limit }} daqiqa
+                    </div>
+                    <div class="col-md-3">
+                        <i class="fas fa-question-circle me-2"></i>
+                        Savollar: {{ questions|length }}
+                    </div>
+                    <div class="col-md-3">
+                        <i class="fas fa-user me-2"></i>
+                        O'qituvchi: {{ test.created_by.get_full_name }}
+                    </div>
+                    <div class="col-md-3">
+                        <i class="fas fa-graduation-cap me-2"></i>
+                        Sinf: {{ test.grade }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="glass-card p-4">
+                <div id="questions-container">
+                    <!-- Questions will be loaded here -->
+                </div>
+                
+                <div class="text-center mt-4">
+                    <button id="start-test-btn" class="btn btn-success btn-lg">
+                        <i class="fas fa-play me-2"></i>
+                        Testni Boshlash
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startBtn = document.getElementById('start-test-btn');
+    
+    startBtn.addEventListener('click', function() {
+        // Start test logic here
+        window.location.href = "{% url 'tests:take_test' test.id %}";
+    });
+});
+</script>
+{% endblock %}

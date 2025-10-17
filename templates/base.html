@@ -310,24 +310,24 @@
                         </li>
                         {% if user.role == 'student' %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'tests:test_list' %}">
+                                <a class="nav-link" href="{% url 'tests:tests' %}">    
                                     <i class="fas fa-tasks me-1"></i>Testlar
                                 </a>
                             </li>
                         {% elif user.role == 'teacher' %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'tests:test_list' %}">
+                                <a class="nav-link" href="{% url 'tests:tests' %}">
                                     <i class="fas fa-plus-circle me-1"></i>Testlar
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'tests:results' %}">
+                                <a class="nav-link" href="{% url 'tests:all_results' %}">
                                     <i class="fas fa-chart-bar me-1"></i>Natijalar
                                 </a>
                             </li>
                         {% elif user.role == 'admin' %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'tests:test_list' %}">
+                                <a class="nav-link" href="{% url 'tests:tests' %}">
                                     <i class="fas fa-plus-circle me-1"></i>Testlar
                                 </a>
                             </li>

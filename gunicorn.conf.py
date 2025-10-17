@@ -1,5 +1,7 @@
-command = '/home/baxadev/mytest/venv/bin/gunicorn'
-pythonpath = '/home/baxadev/mytest'
-bind = '127.0.0.1:8000'
+bind = '127.0.0.1:8001'
 workers = 3
-user = 'root'
+user = 'baxadev'
+pythonpath = '/home/baxadev/my_test'
+chdir = '/home/baxadev/my_test'
+module = 'mytest.wsgi:application'
+timeout = 60

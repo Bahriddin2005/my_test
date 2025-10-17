@@ -337,13 +337,13 @@
                 const error = await response.json();
                 showAlert(error.error || 'Testni boshlashda xatolik yuz berdi', 'danger');
                 setTimeout(() => {
-                    window.location.href = '{% url "tests:test_list" %}';
+                    window.location.href = '{% url "tests:tests" %}';
                 }, 2000);
             }
         } catch (error) {
             showAlert('Server bilan bog\'lanishda xatolik yuz berdi', 'danger');
             setTimeout(() => {
-                window.location.href = '{% url "tests:test_list" %}';
+                window.location.href = '{% url "tests:tests" %}';
             }, 2000);
         }
     }

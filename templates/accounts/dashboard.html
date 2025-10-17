@@ -182,7 +182,7 @@
                     <div class="row g-3">
                         {% if user.role == 'student' %}
                         <div class="col-md-6">
-                            <a href="{% url 'tests:test_list' %}" class="btn btn-primary w-100 btn-lg">
+                            <a href="{% url 'tests:tests' %}" class="btn btn-primary w-100 btn-lg">
                                 <i class="fas fa-play me-2"></i>
                                 Testlarni Ko'rish
                             </a>
@@ -202,7 +202,7 @@
                             </a>
                         </div>
                         <div class="col-md-4">
-                            <a href="{% url 'tests:test_list' %}" class="btn btn-outline-light w-100 btn-lg">
+                            <a href="{% url 'tests:tests' %}" class="btn btn-outline-light w-100 btn-lg">
                                 <i class="fas fa-list me-2"></i>
                                 Testlarni Boshqarish
                             </a>
@@ -234,12 +234,12 @@
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="{% url 'tests:test_list' %}" class="btn btn-outline-info w-100 btn-lg">
+                            <a href="{% url 'tests:tests' %}" class="btn btn-outline-info w-100 btn-lg">
                                 <i class="fas fa-tasks me-2"></i>
                                 Testlar
                             </a>
                         </div>
-                            <a href="{% url 'tests:test_list' %}" class="btn btn-outline-light w-100 btn-lg">
+                            <a href="{% url 'tests:tests' %}" class="btn btn-outline-light w-100 btn-lg">
                                 <i class="fas fa-chart-bar me-2"></i>
                                 Barcha Testlar
                             </a>
@@ -316,7 +316,7 @@
                         <i class="fas fa-chart-line me-2"></i>
                         So'nggi Natijalarim
                     </h4>
-                    <a href="{% url 'tests:test_list' %}" class="btn btn-outline-light btn-sm">
+                    <a href="{% url 'tests:tests' %}" class="btn btn-outline-light btn-sm">
                         <i class="fas fa-eye me-1"></i>
                         Barchasini ko'rish
                     </a>
@@ -401,7 +401,7 @@
                 <p class="text-white-50 mb-4">
                     Bilimingizni sinash uchun mavjud testlardan birini tanlang va topshiring.
                 </p>
-                <a href="{% url 'tests:test_list' %}" class="btn btn-primary btn-lg">
+                <a href="{% url 'tests:tests' %}" class="btn btn-primary btn-lg">
                     <i class="fas fa-play me-2"></i>
                     Testni Boshlash
                 </a>
@@ -437,7 +437,7 @@
             {% endif %}
             
             // Mavjud testlarni olish
-            const response = await fetch('{% url "tests:test_list" %}');
+            const response = await fetch('{% url "tests:tests" %}');
             if (response.ok) {
                 const data = await response.json();
                 let availableTests = 0;
@@ -457,7 +457,7 @@
             
             {% elif user.role == 'teacher' %}
             // Load teacher stats
-            const response = await fetch('{% url "tests:test_list" %}');
+            const response = await fetch('{% url "tests:tests" %}');
             if (response.ok) {
                 const data = await response.json();
                 

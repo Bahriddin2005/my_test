@@ -37,12 +37,12 @@
                         Dashboard
                     </a>
                     {% if user.role == 'student' %}
-                    <a href="{% url 'tests:test_list' %}" class="btn btn-outline-light btn-lg">
+                    <a href="{% url 'tests:tests' %}" class="btn btn-outline-light btn-lg">
                         <i class="fas fa-tasks me-2"></i>
                         Testlarni Ko'rish
                     </a>
                     {% elif user.role == 'teacher' %}
-                    <a href="{% url 'tests:test_list' %}" class="btn btn-outline-light btn-lg">
+                    <a href="{% url 'tests:create_test' %}" class="btn btn-outline-light btn-lg">
                         <i class="fas fa-plus-circle me-2"></i>
                         Test Yaratish
                     </a>
