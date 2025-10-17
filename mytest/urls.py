@@ -4,11 +4,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.shortcuts import render
 from accounts.views import *
+from tests_app.views import *
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('', home_view, name='home'),
-    path('dashboard/', dashboard_view, name='dashboard'),
     path('accounts/', include('accounts.urls')),
     path('tests/', include('tests_app.urls')),
 ]

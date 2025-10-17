@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 class User(AbstractUser):
     USER_ROLES = (
@@ -22,7 +23,7 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
-    date_joined = models.DateTimeField(auto_now_add=True)
+    date_joined = models.DateTimeField()
     is_active = models.BooleanField(default=True)
     
     USERNAME_FIELD = 'username'
