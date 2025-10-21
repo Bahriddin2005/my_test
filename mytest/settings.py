@@ -80,7 +80,7 @@ DATABASES = {
          'HOST': 'localhost',
          'PORT': '5432',
      }
-
+}
 # Валидаторы паролей
 AUTH_PASSWORD_VALIDATORS = [
     {

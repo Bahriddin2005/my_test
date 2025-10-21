@@ -142,18 +142,14 @@ def dashboard_view(request):
         
         context['recent_results'] = []
         for result in test_results:
-            # Grade ni hisoblash - безопасная версия
-            try:
-                if (result.attempt and 
-                    result.attempt.score is not None and 
-                    result.attempt.total_points is not None and 
-                    result.attempt.total_points > 0):
-                    percentage = (result.attempt.score / result.attempt.total_points * 100)
-                else:
-                    percentage = 0
-            except (TypeError, ZeroDivisionError):
-                percentage = 0
-                
+            # Grade ni hisoblash
+            if (result.attempt and 
+    		result.attempt.score is not None and 
+    		result.attempt.total_points is not None and 
+    		result.attempt.total_points > 0):
+    		percentage = (result.attempt.score / result.attempt.total_points * 100)
+	    else:
+    		percentage = 0
             if percentage >= 81:
                 grade = "A'lo"
             elif percentage >= 61:
@@ -178,75 +174,35 @@ def dashboard_view(request):
         context['total_tests'] = all_results.count()
         
         if all_results:
-            # Безопасное вычисление среднего балла
-            total_percentage = 0
-            valid_results = 0
+            total_percentage = sum([
+                (r.attempt.score / r.attempt.total_points * 100) if r.attempt.total_points > 0 else 0 
+                for r in all_results
+            ])
+            context['average_score'] = total_percentage / len(all_results) if all_results else 0
             
-            for r in all_results:
-                try:
-                    if (r.attempt and 
-                        r.attempt.score is not None and 
-                        r.attempt.total_points is not None and 
-                        r.attempt.total_points > 0):
-                        total_percentage += (r.attempt.score / r.attempt.total_points * 100)
-                        valid_results += 1
-                except (TypeError, ZeroDivisionError):
-                    continue
+            # Eng yaxshi natija
+            best_result = max(all_results, key=lambda x: (x.attempt.score/x.attempt.total_points*100) if x.attempt.total_points > 0 else 0)
+            best_percentage = (best_result.attempt.score / best_result.attempt.total_points * 100) if best_result.attempt.total_points > 0 else 0
             
-            context['average_score'] = total_percentage / valid_results if valid_results > 0 else 0
-            
-            # Безопасное нахождение лучшего результата
-            best_result = None
-            best_percentage = 0
-            
-            for r in all_results:
-                try:
-                    if (r.attempt and 
-                        r.attempt.score is not None and 
-                        r.attempt.total_points is not None and 
-                        r.attempt.total_points > 0):
-                        current_percentage = (r.attempt.score / r.attempt.total_points * 100)
-                        if current_percentage > best_percentage:
-                            best_percentage = current_percentage
-                            best_result = r
-                except (TypeError, ZeroDivisionError):
-                    continue
-            
-            if best_result:
-                # Grade ni hisoblash
-                if best_percentage >= 81:
-                    best_grade = "A'lo"
-                elif best_percentage >= 61:
-                    best_grade = 'Yaxshi'
-                elif best_percentage >= 31:
-                    best_grade = 'Qoniqarli'
-                else:
-                    best_grade = 'Qoniqarsiz'
-                    
-                context['best_result'] = {
-                    'test_name': best_result.attempt.test.title,
-                    'score': best_result.attempt.score,
-                    'max_score': best_result.attempt.total_points,
-                    'percentage': best_percentage,
-                    'grade': best_grade
-                }
+            # Grade ni hisoblash
+            if best_percentage >= 81:
+                best_grade = "A'lo"
+            elif best_percentage >= 61:
+                best_grade = 'Yaxshi'
+            elif best_percentage >= 31:
+                best_grade = 'Qoniqarli'
             else:
-                context['best_result'] = {
-                    'test_name': 'No tests completed',
-                    'score': 0,
-                    'max_score': 0,
-                    'percentage': 0,
-                    'grade': 'No grade'
-                }
+                best_grade = 'Qoniqarsiz'
+                
+            context['best_result'] = {
+                'test_name': best_result.attempt.test.title,
+                'score': best_result.attempt.score,
+                'max_score': best_result.attempt.total_points,
+                'percentage': best_percentage,
+                'grade': best_grade
+            }
         else:
             context['average_score'] = 0
-            context['best_result'] = {
-                'test_name': 'No tests completed',
-                'score': 0,
-                'max_score': 0,
-                'percentage': 0,
-                'grade': 'No grade'
-            }
     
     return render(request, 'accounts/dashboard.html', context)
 
