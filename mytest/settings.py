@@ -70,6 +70,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'mytest.wsgi.application'
 
 #PostgreSQL
+
 DATABASES = { 
      'default': {
          'ENGINE': 'django.db.backends.postgresql',
@@ -79,7 +80,6 @@ DATABASES = {
          'HOST': 'localhost',
          'PORT': '5432',
      }
-}
 
 # Валидаторы паролей
 AUTH_PASSWORD_VALIDATORS = [
