@@ -1,0 +1,12 @@
+backup_directory: "/path/to/backup"
+remote_storage:
+  type: "s3"
+  bucket: "your-bucket-name"
+  access_key: "your-access-key"
+  secret_key: "your-secret-key"
+retention_policy:
+  days: 30
+  delete_old_backups: true
+logging:
+  level: "INFO"
+  file: "backup.log"
