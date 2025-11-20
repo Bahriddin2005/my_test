@@ -4,51 +4,53 @@
 {% block title %}Foydalanuvchilarni Tasdiqlash - Buxoro Bilimdonlar Maktabi{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="glass-card p-4 mb-4" data-aos="fade-down">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2 class="text-white mb-1">
-                        <i class="fas fa-user-check me-2"></i>
-                        Foydalanuvchilarni Tasdiqlash
-                    </h2>
-                    <p class="text-white-50 mb-0">Yangi ro'yxatdan o'tgan foydalanuvchilarni tasdiqlang</p>
-                </div>
-                <div>
-                    <span class="badge bg-warning fs-6" id="pendingCount">--</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="glass-card p-4" data-aos="fade-up">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="text-white mb-0">
-                    <i class="fas fa-list me-2"></i>
-                    Kutilayotgan So'rovlar
-                </h4>
-                <button class="btn btn-outline-light" onclick="refreshRequests()">
-                    <i class="fas fa-sync-alt me-1"></i>
-                    Yangilash
-                </button>
-            </div>
-
-            <div id="loadingIndicator" class="text-center py-4">
-                <div class="text-white">
-                    <div class="loading d-inline-block"></div>
-                    <p class="mt-2">Yuklanmoqda...</p>
+<div class="page-modern-container">
+    <div class="row">
+        <div class="col-12">
+            <!-- Page Header -->
+            <div class="page-header-modern mb-4" data-aos="fade-down">
+                <div class="page-header-content-modern">
+                    <div class="page-header-text-modern">
+                        <h1 class="page-title-modern">
+                            <i class="fas fa-user-check"></i>
+                            Foydalanuvchilarni Tasdiqlash
+                        </h1>
+                        <p class="page-subtitle-modern">Yangi ro'yxatdan o'tgan foydalanuvchilarni tasdiqlang</p>
+                    </div>
+                    <div class="page-header-badge-modern">
+                        <span class="pending-badge-modern" id="pendingCount">--</span>
+                    </div>
                 </div>
             </div>
 
-            <div id="requestsList" class="d-none">
-                <!-- Verification requests will be loaded here -->
-            </div>
+            <!-- Requests Section -->
+            <div class="content-card-modern" data-aos="fade-up">
+                <div class="content-card-header-modern">
+                    <h3 class="content-card-title-modern">
+                        <i class="fas fa-list"></i>
+                        Kutilayotgan So'rovlar
+                    </h3>
+                    <button class="refresh-btn-modern" onclick="refreshRequests()">
+                        <i class="fas fa-sync-alt"></i>
+                        Yangilash
+                    </button>
+                </div>
 
-            <div id="noRequests" class="text-center py-5 d-none">
-                <div class="text-white-50">
-                    <i class="fas fa-check-circle fa-3x mb-3"></i>
-                    <h4>Barcha so'rovlar ko'rib chiqildi!</h4>
-                    <p>Hozircha tasdiqlanishi kerak bo'lgan yangi foydalanuvchilar yo'q.</p>
+                <div id="loadingIndicator" class="loading-section-modern">
+                    <div class="loading-spinner-modern"></div>
+                    <p class="loading-text-modern">Yuklanmoqda...</p>
+                </div>
+
+                <div id="requestsList" class="requests-list-modern d-none">
+                    <!-- Verification requests will be loaded here -->
+                </div>
+
+                <div id="noRequests" class="empty-state-modern d-none">
+                    <div class="empty-state-icon-modern">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h4 class="empty-state-title-modern">Barcha so'rovlar ko'rib chiqildi!</h4>
+                    <p class="empty-state-text-modern">Hozircha tasdiqlanishi kerak bo'lgan yangi foydalanuvchilar yo'q.</p>
                 </div>
             </div>
         </div>
@@ -170,57 +172,58 @@
             const requestDate = new Date(request.requested_at).toLocaleDateString('uz-UZ');
             
             html += `
-                <div class="glass-card p-4 mb-3" data-aos="fade-up" data-aos-delay="${index * 100}">
-                    <div class="row align-items-center">
-                        <div class="col-md-2">
-                            <div class="text-center">
-                                <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" 
-                                     style="width: 60px; height: 60px;">
-                                    <i class="fas fa-user fa-lg text-white"></i>
+                <div class="request-card-modern" data-aos="fade-up" data-aos-delay="${index * 100}">
+                    <div class="request-card-content-modern">
+                        <div class="request-avatar-modern">
+                            <div class="request-avatar-circle-modern">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span class="request-role-badge-modern">${getRoleDisplayName(user.role)}</span>
+                        </div>
+                        
+                        <div class="request-info-modern">
+                            <h5 class="request-name-modern">${user.first_name} ${user.last_name}</h5>
+                            <div class="request-details-modern">
+                                <div class="request-detail-item-modern">
+                                    <i class="fas fa-at"></i>
+                                    <span>${user.username}</span>
                                 </div>
-                                <span class="badge bg-secondary">${getRoleDisplayName(user.role)}</span>
+                                <div class="request-detail-item-modern">
+                                    <i class="fas fa-envelope"></i>
+                                    <span>${user.email}</span>
+                                </div>
+                                ${user.role === 'student' ? `
+                                    <div class="request-detail-item-modern">
+                                        <i class="fas fa-graduation-cap"></i>
+                                        <span>${user.grade || '--'}-sinf ${user.class_name ? `(${user.class_name})` : ''}</span>
+                                    </div>
+                                ` : user.role === 'teacher' ? `
+                                    <div class="request-detail-item-modern">
+                                        <i class="fas fa-book"></i>
+                                        <span>${user.subject || 'Fan ko\'rsatilmagan'}</span>
+                                    </div>
+                                ` : ''}
                             </div>
                         </div>
                         
-                        <div class="col-md-6">
-                            <h5 class="text-white mb-1">${user.first_name} ${user.last_name}</h5>
-                            <p class="text-white-50 mb-1">
-                                <i class="fas fa-at me-1"></i>${user.username}
-                            </p>
-                            <p class="text-white-50 mb-1">
-                                <i class="fas fa-envelope me-1"></i>${user.email}
-                            </p>
-                            ${user.role === 'student' ? `
-                                <p class="text-white-50 mb-0">
-                                    <i class="fas fa-graduation-cap me-1"></i>${user.grade || '--'}-sinf 
-                                    ${user.class_name ? `(${user.class_name})` : ''}
-                                </p>
-                            ` : user.role === 'teacher' ? `
-                                <p class="text-white-50 mb-0">
-                                    <i class="fas fa-book me-1"></i>${user.subject || 'Fan ko\'rsatilmagan'}
-                                </p>
-                            ` : ''}
+                        <div class="request-date-modern">
+                            <small class="request-date-label-modern">So'rov sanasi</small>
+                            <span class="request-date-value-modern">${requestDate}</span>
                         </div>
                         
-                        <div class="col-md-2">
-                            <div class="text-center">
-                                <small class="text-white-50 d-block">So'rov sanasi</small>
-                                <span class="text-white">${requestDate}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-2">
-                            <div class="d-flex flex-column gap-2">
-                                <button class="btn btn-success btn-sm" onclick="showUserDetails(${request.id})">
-                                    <i class="fas fa-eye me-1"></i>Ko'rish
-                                </button>
-                                <button class="btn btn-outline-success btn-sm" onclick="approveRequest(${request.id})">
-                                    <i class="fas fa-check me-1"></i>Tasdiqlash
-                                </button>
-                                <button class="btn btn-outline-danger btn-sm" onclick="rejectRequest(${request.id})">
-                                    <i class="fas fa-times me-1"></i>Rad etish
-                                </button>
-                            </div>
+                        <div class="request-actions-modern">
+                            <button class="action-btn-modern action-btn-view-modern" onclick="showUserDetails(${request.id})">
+                                <i class="fas fa-eye"></i>
+                                Ko'rish
+                            </button>
+                            <button class="action-btn-modern action-btn-approve-modern" onclick="approveRequest(${request.id})">
+                                <i class="fas fa-check"></i>
+                                Tasdiqlash
+                            </button>
+                            <button class="action-btn-modern action-btn-reject-modern" onclick="rejectRequest(${request.id})">
+                                <i class="fas fa-times"></i>
+                                Rad etish
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -400,4 +403,347 @@
         }, 5000);
     }
 </script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Page Modern Container */
+    .page-modern-container {
+        padding: 20px 0;
+    }
+
+    /* Page Header Modern */
+    .page-header-modern {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 30px 40px;
+        margin-bottom: 30px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-header-content-modern {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .page-title-modern {
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        margin: 0 0 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .page-title-modern i {
+        color: #4CAF50;
+    }
+
+    .page-subtitle-modern {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin: 0;
+    }
+
+    .pending-badge-modern {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+        color: white;
+        font-weight: 700;
+        font-size: 1.1rem;
+        box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+    }
+
+    /* Content Card Modern */
+    .content-card-modern {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .content-card-header-modern {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .content-card-title-modern {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .content-card-title-modern i {
+        color: #667eea;
+    }
+
+    .refresh-btn-modern {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .refresh-btn-modern:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Loading Section Modern */
+    .loading-section-modern {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .loading-spinner-modern {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.1);
+        border-top-color: #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .loading-text-modern {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    /* Requests List Modern */
+    .requests-list-modern {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    /* Request Card Modern */
+    .request-card-modern {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 16px;
+        padding: 25px;
+        transition: all 0.3s ease;
+    }
+
+    .request-card-modern:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .request-card-content-modern {
+        display: grid;
+        grid-template-columns: auto 1fr auto auto;
+        gap: 25px;
+        align-items: center;
+    }
+
+    .request-avatar-modern {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .request-avatar-circle-modern {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .request-role-badge-modern {
+        padding: 4px 12px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .request-info-modern {
+        flex: 1;
+    }
+
+    .request-name-modern {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: white;
+        margin: 0 0 12px 0;
+    }
+
+    .request-details-modern {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .request-detail-item-modern {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.95rem;
+    }
+
+    .request-detail-item-modern i {
+        width: 18px;
+        color: #667eea;
+    }
+
+    .request-date-modern {
+        text-align: center;
+        padding: 0 15px;
+    }
+
+    .request-date-label-modern {
+        display: block;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.85rem;
+        margin-bottom: 5px;
+    }
+
+    .request-date-value-modern {
+        display: block;
+        color: white;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .request-actions-modern {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .action-btn-modern {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: 10px;
+        border: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .action-btn-view-modern {
+        background: rgba(102, 126, 234, 0.2);
+        color: #667eea;
+        border: 1px solid rgba(102, 126, 234, 0.3);
+    }
+
+    .action-btn-view-modern:hover {
+        background: rgba(102, 126, 234, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .action-btn-approve-modern {
+        background: rgba(76, 175, 80, 0.2);
+        color: #4CAF50;
+        border: 1px solid rgba(76, 175, 80, 0.3);
+    }
+
+    .action-btn-approve-modern:hover {
+        background: rgba(76, 175, 80, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .action-btn-reject-modern {
+        background: rgba(244, 67, 54, 0.2);
+        color: #f44336;
+        border: 1px solid rgba(244, 67, 54, 0.3);
+    }
+
+    .action-btn-reject-modern:hover {
+        background: rgba(244, 67, 54, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Empty State Modern */
+    .empty-state-modern {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-state-icon-modern {
+        font-size: 4rem;
+        color: rgba(255, 255, 255, 0.3);
+        margin-bottom: 20px;
+    }
+
+    .empty-state-title-modern {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+        margin: 0 0 10px 0;
+    }
+
+    .empty-state-text-modern {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin: 0;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .request-card-content-modern {
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+
+        .request-actions-modern {
+            flex-direction: row;
+            justify-content: center;
+        }
+
+        .page-title-modern {
+            font-size: 1.5rem;
+        }
+    }
+</style>
 {% endblock %}

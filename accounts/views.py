@@ -358,3 +358,215 @@ def reject_verification(request, request_id):
         return JsonResponse({'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
         return JsonResponse({'error': 'An error occurred'}, status=500)
+
+@login_required
+def analytics_view(request):
+    """Web sayt analitikasi - Faqat admin uchun"""
+    if request.user.role != 'admin':
+        return JsonResponse({'error': 'Access denied'}, status=403)
+    
+    from tests_app.models import Test, TestAttempt, TestResult, Question
+    from django.db.models import Count, Avg, Q, Sum
+    from django.utils import timezone
+    from datetime import timedelta
+    
+    # Umumiy statistika
+    total_students = User.objects.filter(role='student', is_verified=True).count()
+    total_teachers = User.objects.filter(role='teacher', is_verified=True).count()
+    total_tests = Test.objects.count()
+    total_questions = Question.objects.count()
+    total_attempts = TestAttempt.objects.filter(is_completed=True).count()
+    
+    # Test natijalari statistikasi
+    completed_attempts = TestAttempt.objects.filter(is_completed=True)
+    if completed_attempts.exists():
+        avg_score = completed_attempts.aggregate(avg=Avg('percentage'))['avg'] or 0
+        total_score = completed_attempts.aggregate(total=Sum('score'))['total'] or 0
+        total_points = completed_attempts.aggregate(total=Sum('total_points'))['total'] or 0
+    else:
+        avg_score = 0
+        total_score = 0
+        total_points = 0
+    
+    # Sinf bo'yicha statistika
+    grade_stats = []
+    for grade in range(5, 12):
+        students_count = User.objects.filter(role='student', grade=grade, is_verified=True).count()
+        tests_count = Test.objects.filter(grade=grade).count()
+        attempts_count = TestAttempt.objects.filter(
+            is_completed=True,
+            student__grade=grade
+        ).count()
+        
+        if attempts_count > 0:
+            grade_avg = TestAttempt.objects.filter(
+                is_completed=True,
+                student__grade=grade
+            ).aggregate(avg=Avg('percentage'))['avg'] or 0
+        else:
+            grade_avg = 0
+        
+        grade_stats.append({
+            'grade': grade,
+            'students': students_count,
+            'tests': tests_count,
+            'attempts': attempts_count,
+            'avg_score': round(grade_avg, 1)
+        })
+    
+    # Fan bo'yicha statistika
+    subject_stats = []
+    subjects = Test.objects.values_list('subject', flat=True).distinct()
+    for subject in subjects:
+        tests_count = Test.objects.filter(subject=subject).count()
+        attempts_count = TestAttempt.objects.filter(
+            is_completed=True,
+            test__subject=subject
+        ).count()
+        
+        if attempts_count > 0:
+            subject_avg = TestAttempt.objects.filter(
+                is_completed=True,
+                test__subject=subject
+            ).aggregate(avg=Avg('percentage'))['avg'] or 0
+        else:
+            subject_avg = 0
+        
+        subject_stats.append({
+            'subject': subject,
+            'tests': tests_count,
+            'attempts': attempts_count,
+            'avg_score': round(subject_avg, 1)
+        })
+    
+    # Eng faol o'quvchilar (top 10)
+    top_students = User.objects.filter(
+        role='student',
+        is_verified=True
+    ).annotate(
+        attempts_count=Count('test_attempts', filter=Q(test_attempts__is_completed=True))
+    ).order_by('-attempts_count')[:10]
+    
+    top_students_data = []
+    for student in top_students:
+        if student.attempts_count > 0:
+            student_avg = TestAttempt.objects.filter(
+                student=student,
+                is_completed=True
+            ).aggregate(avg=Avg('percentage'))['avg'] or 0
+        else:
+            student_avg = 0
+        
+        top_students_data.append({
+            'name': student.get_full_name() or student.username,
+            'grade': student.grade,
+            'class_name': student.class_name,
+            'attempts': student.attempts_count,
+            'avg_score': round(student_avg, 1)
+        })
+    
+    # Eng muvaffaqiyatli testlar (top 10)
+    top_tests = Test.objects.annotate(
+        attempts_count=Count('attempts', filter=Q(attempts__is_completed=True))
+    ).filter(attempts_count__gt=0).order_by('-attempts_count')[:10]
+    
+    top_tests_data = []
+    for test in top_tests:
+        test_attempts = TestAttempt.objects.filter(test=test, is_completed=True)
+        if test_attempts.exists():
+            test_avg = test_attempts.aggregate(avg=Avg('percentage'))['avg'] or 0
+        else:
+            test_avg = 0
+        
+        top_tests_data.append({
+            'title': test.title,
+            'subject': test.subject,
+            'grade': test.grade,
+            'attempts': test.attempts_count,
+            'avg_score': round(test_avg, 1),
+            'total_questions': test.total_questions
+        })
+    
+    # Vaqt bo'yicha statistika (oxirgi 30 kun)
+    date_stats = []
+    for i in range(30):
+        date = timezone.now().date() - timedelta(days=i)
+        attempts_count = TestAttempt.objects.filter(
+            is_completed=True,
+            finished_at__date=date
+        ).count()
+        date_stats.append({
+            'date': date.isoformat(),
+            'attempts': attempts_count
+        })
+    date_stats.reverse()
+    
+    # Baho bo'yicha taqsimot
+    grade_distribution_alo = TestResult.objects.filter(grade="A'lo").count()
+    grade_distribution_yaxshi = TestResult.objects.filter(grade='Yaxshi').count()
+    grade_distribution_qoniqarli = TestResult.objects.filter(grade='Qoniqarli').count()
+    grade_distribution_qoniqarsiz = TestResult.objects.filter(grade='Qoniqarsiz').count()
+    
+    # O'quvchilar ro'yxati - login vaqtlari bilan
+    students_list = User.objects.filter(
+        role='student',
+        is_verified=True
+    ).order_by('-last_login', '-date_joined')[:50]  # Oxirgi 50 ta
+    
+    students_data = []
+    for student in students_list:
+        students_data.append({
+            'id': student.id,
+            'name': student.get_full_name() or student.username,
+            'username': student.username,
+            'grade': student.grade or '-',
+            'class_name': student.class_name or '-',
+            'last_login': student.last_login.strftime('%Y-%m-%d %H:%M:%S') if student.last_login else 'Hech qachon',
+            'date_joined': student.date_joined.strftime('%Y-%m-%d %H:%M:%S'),
+            'is_online': student.last_login and (timezone.now() - student.last_login).total_seconds() < 3600 if student.last_login else False
+        })
+    
+    # O'qituvchilar ro'yxati - login vaqtlari bilan
+    teachers_list = User.objects.filter(
+        role='teacher',
+        is_verified=True
+    ).order_by('-last_login', '-date_joined')[:50]  # Oxirgi 50 ta
+    
+    teachers_data = []
+    for teacher in teachers_list:
+        teachers_data.append({
+            'id': teacher.id,
+            'name': teacher.get_full_name() or teacher.username,
+            'username': teacher.username,
+            'subject': teacher.subject or '-',
+            'last_login': teacher.last_login.strftime('%Y-%m-%d %H:%M:%S') if teacher.last_login else 'Hech qachon',
+            'date_joined': teacher.date_joined.strftime('%Y-%m-%d %H:%M:%S'),
+            'is_online': teacher.last_login and (timezone.now() - teacher.last_login).total_seconds() < 3600 if teacher.last_login else False
+        })
+    
+    context = {
+        'total_students': total_students,
+        'total_teachers': total_teachers,
+        'total_tests': total_tests,
+        'total_questions': total_questions,
+        'total_attempts': total_attempts,
+        'avg_score': round(avg_score, 1),
+        'total_score': total_score,
+        'total_points': total_points,
+        'grade_stats': grade_stats,
+        'subject_stats': subject_stats,
+        'top_students': top_students_data,
+        'top_tests': top_tests_data,
+        'date_stats': date_stats,
+        'grade_distribution_alo': grade_distribution_alo,
+        'grade_distribution_yaxshi': grade_distribution_yaxshi,
+        'grade_distribution_qoniqarli': grade_distribution_qoniqarli,
+        'grade_distribution_qoniqarsiz': grade_distribution_qoniqarsiz,
+        'students_list': students_data,
+        'teachers_list': teachers_data
+    }
+    
+    if request.headers.get('Accept') == 'application/json':
+        return JsonResponse(context)
+    
+    return render(request, 'accounts/analytics.html', context)

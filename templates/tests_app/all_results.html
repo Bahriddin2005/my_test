@@ -4,41 +4,100 @@
 
 {% block extra_css %}
 <style>
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    @keyframes shimmer {
+        0% { background-position: -1000px 0; }
+        100% { background-position: 1000px 0; }
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
     .results-container {
         max-width: 1400px;
         margin: 0 auto;
         padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-size: 400% 400%;
+        animation: gradientShift 15s ease infinite;
+        min-height: 100vh;
     }
 
     .page-header {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        padding: 30px;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 40px;
         margin-bottom: 30px;
         text-align: center;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        animation: shimmer 3s infinite;
     }
 
     .page-header h1 {
-        color: #2c3e50;
-        font-size: 2.5rem;
-        margin-bottom: 10px;
-        font-weight: 600;
+        color: white;
+        font-size: 2.8rem;
+        margin-bottom: 15px;
+        font-weight: 700;
+        text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .page-header .lead {
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 1.2rem;
+        text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
     }
 
     .filters-section {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        padding: 20px;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 30px;
         margin-bottom: 30px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .filters-section:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
     }
 
     .filter-controls {
         display: flex;
-        gap: 15px;
+        gap: 20px;
         flex-wrap: wrap;
         align-items: center;
         justify-content: center;
@@ -47,125 +106,231 @@
     .filter-group {
         display: flex;
         flex-direction: column;
-        gap: 5px;
-        min-width: 150px;
+        gap: 8px;
+        min-width: 160px;
     }
 
     .filter-group label {
         font-weight: 600;
-        color: #2c3e50;
-        font-size: 0.9rem;
+        color: white;
+        font-size: 0.95rem;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
     }
 
     .filter-group select, .filter-group input {
-        padding: 8px 12px;
-        border: 2px solid #e9ecef;
-        border-radius: 8px;
-        background: white;
-        font-size: 0.9rem;
+        padding: 12px 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.95);
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .filter-group select:hover, .filter-group input:hover {
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
     }
 
     .filter-group select:focus, .filter-group input:focus {
-        border-color: #3498db;
+        border-color: #fff;
         outline: none;
-        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3), 0 6px 20px rgba(0, 0, 0, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .filter-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 12px 28px;
+        border-radius: 12px;
+        color: white;
+        font-weight: 700;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        font-size: 1rem;
+        margin-top: 20px;
+    }
+
+    .filter-btn:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.6);
+    }
+
+    .filter-btn:active {
+        transform: translateY(-1px) scale(1.02);
     }
 
     .stats-overview {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        padding: 20px;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 30px;
         margin-bottom: 30px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 25px;
     }
 
     .stat-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
         color: white;
-        padding: 20px;
-        border-radius: 10px;
+        padding: 30px;
+        border-radius: 20px;
         text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        animation: pulse 3s ease-in-out infinite;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-10px) scale(1.05);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        border-color: rgba(255, 255, 255, 0.5);
     }
 
     .stat-card .number {
-        font-size: 2rem;
-        font-weight: 700;
+        font-size: 2.5rem;
+        font-weight: 800;
         display: block;
+        text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+        margin-bottom: 8px;
+        position: relative;
+        z-index: 1;
     }
 
     .stat-card .label {
-        font-size: 0.9rem;
-        opacity: 0.9;
+        font-size: 1rem;
+        opacity: 0.95;
+        font-weight: 500;
+        position: relative;
+        z-index: 1;
+        text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
     }
 
     .results-table-container {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        padding: 20px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
         overflow-x: auto;
+    }
+
+    .results-table-container h4 {
+        color: white;
+        font-weight: 700;
+        text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+        margin-bottom: 20px;
     }
 
     .results-table {
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
         margin-top: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        overflow: hidden;
     }
 
     .results-table th,
     .results-table td {
-        padding: 12px 8px;
+        padding: 16px 12px;
         text-align: left;
-        border-bottom: 1px solid #e9ecef;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     }
 
     .results-table th {
-        background: #f8f9fa;
-        font-weight: 600;
-        color: #2c3e50;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-weight: 700;
+        color: white;
         position: sticky;
         top: 0;
         z-index: 10;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        font-size: 0.95rem;
+        letter-spacing: 0.5px;
+    }
+
+    .results-table tbody tr {
+        transition: all 0.3s ease;
+        background: white;
     }
 
     .results-table tbody tr:hover {
-        background: #f8f9fa;
+        background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        transform: scale(1.01);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .results-table tbody tr:last-child td {
+        border-bottom: none;
     }
 
     .grade-badge {
-        padding: 4px 8px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 25px;
+        font-size: 0.85rem;
+        font-weight: 700;
         text-align: center;
+        display: inline-block;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .grade-badge:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
     }
 
     .grade-badge.excellent {
-        background: #d4edda;
-        color: #155724;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
     }
 
     .grade-badge.good {
-        background: #d1ecf1;
-        color: #0c5460;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        opacity: 0.9;
     }
 
     .grade-badge.satisfactory {
-        background: #fff3cd;
-        color: #856404;
+        background: linear-gradient(135deg, #f093fb 0%, #764ba2 100%);
+        color: white;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
     }
 
     .grade-badge.poor {
-        background: #f8d7da;
-        color: #721c24;
+        background: linear-gradient(135deg, #f5576c 0%, #eb3349 100%);
+        color: white;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
     }
 
     .student-info {
@@ -175,16 +340,23 @@
     }
 
     .student-avatar {
-        width: 35px;
-        height: 35px;
+        width: 45px;
+        height: 45px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #3498db, #2980b9);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-weight: 600;
-        font-size: 0.8rem;
+        font-weight: 700;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+    }
+
+    .student-info:hover .student-avatar {
+        transform: scale(1.15) rotate(5deg);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
     }
 
     .student-details {
@@ -218,26 +390,309 @@
 
     .loading {
         text-align: center;
-        padding: 60px 20px;
-        color: #7f8c8d;
+        padding: 120px 40px;
+        color: white;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(25px);
+        border-radius: 30px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        margin: 40px 0;
+        box-shadow: 
+            0 25px 70px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        position: relative;
+        overflow: hidden;
+        min-height: 400px;
+        width: 100%;
+        max-width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .loading::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        animation: rotate 8s linear infinite;
+    }
+
+    .loading::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+        animation: shimmer 3s infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .loading-spinner-wrapper {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin-bottom: 40px;
+        z-index: 2;
+    }
+
+    .loading-spinner {
+        width: 120px;
+        height: 120px;
+        position: relative;
+        margin: 0 auto;
+    }
+
+    .loading-spinner::before,
+    .loading-spinner::after {
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        top: 0;
+        left: 0;
+        animation: spin 1.5s linear infinite;
+    }
+
+    .loading-spinner::before {
+        width: 120px;
+        height: 120px;
+        border: 5px solid rgba(255, 255, 255, 0.2);
+        border-top-color: rgba(255, 255, 255, 0.8);
+        box-shadow: 
+            0 0 20px rgba(102, 126, 234, 0.5),
+            inset 0 0 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .loading-spinner::after {
+        width: 90px;
+        height: 90px;
+        top: 15px;
+        left: 15px;
+        border: 4px solid rgba(255, 255, 255, 0.15);
+        border-top-color: rgba(118, 75, 162, 0.9);
+        animation-duration: 1s;
+        animation-direction: reverse;
+        box-shadow: 
+            0 0 15px rgba(118, 75, 162, 0.4),
+            inset 0 0 15px rgba(118, 75, 162, 0.2);
+    }
+
+    .loading-icon-wrapper {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 3;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+        border-radius: 50%;
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 
+            0 0 30px rgba(102, 126, 234, 0.6),
+            inset 0 0 20px rgba(255, 255, 255, 0.1);
+        animation: pulseGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes pulseGlow {
+        0%, 100% {
+            transform: translate(-50%, -50%) scale(1);
+            box-shadow: 
+                0 0 30px rgba(102, 126, 234, 0.6),
+                inset 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+        50% {
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 
+                0 0 50px rgba(102, 126, 234, 0.9),
+                inset 0 0 30px rgba(255, 255, 255, 0.2);
+        }
     }
 
     .loading i {
-        font-size: 3rem;
-        margin-bottom: 20px;
-        animation: spin 1s linear infinite;
+        font-size: 2rem;
+        color: white;
+        text-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+        animation: iconFloat 2s ease-in-out infinite;
+    }
+
+    @keyframes iconFloat {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-10px) rotate(5deg); }
+    }
+
+    .loading h3 {
+        color: white;
+        text-shadow: 
+            2px 2px 10px rgba(0, 0, 0, 0.4),
+            0 0 20px rgba(102, 126, 234, 0.5);
+        font-weight: 800;
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+        position: relative;
+        z-index: 2;
+        letter-spacing: 0.5px;
+    }
+
+    .loading p {
+        color: rgba(255, 255, 255, 0.95);
+        text-shadow: 
+            1px 1px 5px rgba(0, 0, 0, 0.3),
+            0 0 10px rgba(102, 126, 234, 0.3);
+        font-size: 1.1rem;
+        position: relative;
+        z-index: 2;
+        font-weight: 500;
+    }
+
+    .loading-dots {
+        display: inline-block;
+        margin-left: 8px;
+    }
+
+    .loading-dots span {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #fff, rgba(102, 126, 234, 0.8));
+        margin: 0 4px;
+        animation: loadingDots 1.4s infinite ease-in-out both;
+        box-shadow: 
+            0 0 10px rgba(102, 126, 234, 0.6),
+            0 0 20px rgba(255, 255, 255, 0.4);
+    }
+
+    .loading-dots span:nth-child(1) {
+        animation-delay: -0.32s;
+    }
+
+    .loading-dots span:nth-child(2) {
+        animation-delay: -0.16s;
+    }
+
+    @keyframes loadingDots {
+        0%, 80%, 100% {
+            transform: scale(0.5);
+            opacity: 0.4;
+        }
+        40% {
+            transform: scale(1.2);
+            opacity: 1;
+        }
+    }
+
+    .loading-progress {
+        width: 200px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        margin-top: 30px;
+        overflow: hidden;
+        position: relative;
+        z-index: 2;
+    }
+
+    .loading-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+        background-size: 200% 100%;
+        border-radius: 10px;
+        animation: progressMove 2s ease-in-out infinite;
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+    }
+
+    @keyframes progressMove {
+        0% {
+            width: 0%;
+            background-position: 0% 0%;
+        }
+        50% {
+            width: 70%;
+            background-position: 100% 0%;
+        }
+        100% {
+            width: 100%;
+            background-position: 0% 0%;
+        }
     }
 
     .no-results {
         text-align: center;
-        padding: 60px 20px;
-        color: #7f8c8d;
+        padding: 80px 20px;
+        color: white;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .no-results i {
-        font-size: 4rem;
-        margin-bottom: 20px;
-        opacity: 0.5;
+        font-size: 5rem;
+        margin-bottom: 25px;
+        opacity: 0.8;
+        color: white;
+        text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .no-results h3 {
+        color: white;
+        text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .no-results p {
+        color: rgba(255, 255, 255, 0.9);
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-view-details {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 10px 18px;
+        border-radius: 20px;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        font-size: 0.9rem;
+    }
+
+    .btn-view-details:hover {
+        transform: translateY(-3px) scale(1.1);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+    }
+
+    .btn-view-details i {
+        font-size: 1rem;
+    }
+
+    .student-name {
+        font-weight: 700;
+        color: #2c3e50;
+        font-size: 1rem;
+    }
+
+    .test-title {
+        font-weight: 700;
+        color: #2c3e50;
+        font-size: 1rem;
     }
 
     .export-actions {
@@ -248,19 +703,193 @@
     }
 
     .export-btn {
-        background: linear-gradient(135deg, #27ae60, #2ecc71);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 14px 28px;
+        border-radius: 30px;
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.4s ease;
+        font-size: 1rem;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .export-btn::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .export-btn:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+
+    .export-btn:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+    }
+
+    .export-btn:active {
+        transform: translateY(-2px) scale(1.02);
+    }
+
+    .export-btn-grade {
         border: none;
         padding: 10px 20px;
         border-radius: 25px;
         color: white;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.4s ease;
+        font-size: 0.9rem;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        position: relative;
+        overflow: hidden;
     }
 
-    .export-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+    .export-btn-grade::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.5s;
+    }
+
+    .export-btn-grade:hover::before {
+        left: 100%;
+    }
+
+    .export-btn-grade:hover {
+        transform: translateY(-4px) scale(1.08);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.6);
+    }
+
+    .export-main-section {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 35px;
+        margin-bottom: 30px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .export-main-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        animation: rotate 10s linear infinite;
+    }
+
+    .export-main-header {
+        text-align: center;
+        margin-bottom: 30px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .export-main-header h2 {
+        color: white;
+        font-weight: 800;
+        font-size: 2rem;
+        text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+        margin-bottom: 10px;
+    }
+
+    .export-main-header p {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.1rem;
+        text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .export-main-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 18px 40px;
+        border-radius: 30px;
+        color: white;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.4s ease;
+        font-size: 1.2rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        position: relative;
+        overflow: hidden;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 30px;
+    }
+
+    .export-main-btn::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .export-main-btn:hover::before {
+        width: 400px;
+        height: 400px;
+    }
+
+    .export-main-btn:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.7);
+    }
+
+    .export-main-btn i {
+        font-size: 1.5rem;
+    }
+
+    .grade-export-section {
+        margin-top: 25px;
+        padding: 25px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        position: relative;
+        z-index: 2;
+    }
+
+    .grade-export-section h5 {
+        color: white;
+        font-weight: 700;
+        text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+        margin-bottom: 20px;
+        font-size: 1.3rem;
+        text-align: center;
     }
 
     @media (max-width: 768px) {
@@ -318,6 +947,10 @@
                 <label for="gradeFilter">Sinf</label>
                 <select id="gradeFilter">
                     <option value="">Barcha sinflar</option>
+                    <option value="1">1-sinf</option>
+                    <option value="2">2-sinf</option>
+                    <option value="3">3-sinf</option>
+                    <option value="4">4-sinf</option>
                     <option value="5">5-sinf</option>
                     <option value="6">6-sinf</option>
                     <option value="7">7-sinf</option>
@@ -359,8 +992,64 @@
 
             <div class="filter-group">
                 <label>&nbsp;</label>
-                <button class="btn btn-primary" onclick="applyFilters()">
+                <button class="filter-btn" onclick="applyFilters()">
                     <i class="fas fa-filter me-2"></i>Filterlash
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Main Section -->
+    <div class="export-main-section" data-aos="fade-up" data-aos-delay="150">
+        <div class="export-main-header">
+            <h2><i class="fas fa-file-excel me-2"></i>Natijalarni Yuklab Olish</h2>
+            <p>Barcha test natijalarini Excel formatida yuklab oling</p>
+        </div>
+        <div style="text-align: center; position: relative; z-index: 2;">
+            <button class="export-main-btn" onclick="exportToExcel()">
+                <i class="fas fa-download"></i>
+                <span>Barcha Natijalarni Yuklab Olish</span>
+            </button>
+        </div>
+        
+        <!-- Sinf bo'yicha Excel Export -->
+        <div class="grade-export-section">
+            <h5>
+                <i class="fas fa-layer-group me-2"></i>Sinf bo'yicha Excel Export
+            </h5>
+            <div class="grade-export-buttons" style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;">
+                <button class="export-btn-grade" onclick="exportGradeToExcel(1)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>1-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(2)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>2-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(3)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>3-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(4)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>4-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(5)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>5-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(6)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>6-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(7)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>7-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(8)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>8-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(9)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>9-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(10)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>10-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(11)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>11-sinf
                 </button>
             </div>
         </div>
@@ -390,18 +1079,63 @@
 
     <!-- Loading -->
     <div class="loading" id="loadingSection">
-        <i class="fas fa-spinner"></i>
-        <h3>Natijalar yuklanmoqda...</h3>
-        <p>Iltimos kuting...</p>
+        <div class="loading-spinner-wrapper">
+            <div class="loading-spinner"></div>
+            <div class="loading-icon-wrapper">
+                <i class="fas fa-chart-line"></i>
+            </div>
+        </div>
+        <h3>Natijalar yuklanmoqda<span class="loading-dots"><span></span><span></span><span></span></span></h3>
+        <p>Ma'lumotlar yig'ilmoqda, iltimos kuting...</p>
+        <div class="loading-progress">
+            <div class="loading-progress-bar"></div>
+        </div>
     </div>
 
     <!-- Results Table -->
     <div class="results-table-container" id="resultsSection" style="display: none;" data-aos="fade-up" data-aos-delay="300">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4><i class="fas fa-list me-2"></i>Test Natijalari</h4>
-            <div class="export-actions">
-                <button class="export-btn" onclick="exportResults()">
-                    <i class="fas fa-download me-2"></i>Excel
+        </div>
+        
+        <!-- Sinf bo'yicha Excel Export -->
+        <div class="grade-export-section" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+            <h5 style="margin-bottom: 15px; color: #2c3e50;">
+                <i class="fas fa-file-excel me-2"></i>Sinf bo'yicha Excel Export
+            </h5>
+            <div class="grade-export-buttons" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                <button class="export-btn-grade" onclick="exportGradeToExcel(1)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>1-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(2)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>2-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(3)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>3-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(4)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>4-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(5)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>5-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(6)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>6-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(7)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>7-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(8)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>8-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(9)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>9-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(10)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>10-sinf
+                </button>
+                <button class="export-btn-grade" onclick="exportGradeToExcel(11)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-download me-2"></i>11-sinf
                 </button>
             </div>
         </div>
@@ -525,7 +1259,7 @@ function createResultRow(result) {
         <td>${result.time_taken}</td>
         <td>${finishedDate}</td>
         <td>
-            <button class="btn btn-sm btn-outline-primary" onclick="viewDetails(${result.test.id})">
+            <button class="btn-view-details" onclick="viewDetails(${result.test.id})" title="Batafsil ko'rish">
                 <i class="fas fa-eye"></i>
             </button>
         </td>
@@ -585,40 +1319,14 @@ function applyFilters() {
     }
 }
 
-function exportResults() {
-    // Create CSV content
-    let csvContent = "O'quvchi,Test,Fan,Ball,Umumiy Ball,Foiz,Baho,To'g'ri,Noto'g'ri,Javobsiz,Vaqt,Sana\n";
-    
-    filteredResults.forEach(result => {
-        const studentName = `${result.student.first_name} ${result.student.last_name}`;
-        const finishedDate = new Date(result.finished_at).toLocaleDateString('uz-UZ');
-        
-        csvContent += [
-            `"${studentName}"`,
-            `"${result.test.title}"`,
-            `"${result.test.subject}"`,
-            result.score,
-            result.total_points,
-            result.percentage.toFixed(1),
-            `"${result.grade}"`,
-            result.correct_answers,
-            result.incorrect_answers,
-            result.unanswered,
-            `"${result.time_taken}"`,
-            `"${finishedDate}"`
-        ].join(',') + '\n';
-    });
-    
-    // Download CSV
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'barcha_test_natijalari.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+function exportToExcel() {
+    // Barcha natijalarni Excel formatida yuklab olish
+    window.location.href = '/tests/all-results/?export=excel';
+}
+
+function exportGradeToExcel(grade) {
+    // Ma'lum sinf bo'yicha natijalarni Excel formatida yuklab olish
+    window.location.href = `/tests/all-results/?export=excel&grade=${grade}`;
 }
 
 function viewDetails(testId) {

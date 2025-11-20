@@ -20,4 +20,8 @@ urlpatterns = [
     path('retake-requests/<int:request_id>/handle/', views.handle_retake_request_view, name='handle_retake_request'),
     path('student-management/', views.student_test_management, name='student_test_management'),
     path('<int:test_id>/open-for-student/<int:student_id>/', views.open_test_for_student, name='open_test_for_student'),
+    path('<int:test_id>/control/', views.test_control_view, name='test_control'),
+    path('<int:test_id>/pause/', views.pause_test, name='pause_test'),
+    path('<int:test_id>/resume/', views.resume_test, name='resume_test'),
+    path('<int:test_id>/time/', views.test_time_view, name='test_time'),
 ]

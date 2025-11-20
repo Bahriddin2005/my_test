@@ -4,26 +4,26 @@
 {% block title %}Dashboard - Buxoro Bilimdonlar Maktabi{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <!-- Welcome Section -->
-        <div class="glass-card p-4 mb-4" data-aos="fade-down">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h2 class="text-white mb-1">
-                        <i class="fas fa-tachometer-alt me-2"></i>
-                        Xush kelibsiz, {{ user.get_full_name|default:user.username }}!
-                    </h2>
-                    <p class="text-white-50 mb-0">{{ user.get_role_display }} paneli</p>
-                </div>
-                <div class="col-md-4 text-md-end">
-                    <span class="badge bg-{% if user.is_verified %}success{% else %}warning{% endif %} fs-6">
-                        <i class="fas fa-{% if user.is_verified %}check-circle{% else %}clock{% endif %} me-1"></i>
-                        {% if user.is_verified %}Tasdiqlangan{% else %}Kutilmoqda{% endif %}
-                    </span>
+<div class="dashboard-container">
+    <div class="row">
+        <div class="col-12">
+            <!-- Welcome Section -->
+            <div class="welcome-section-modern mb-4" data-aos="fade-down">
+                <div class="welcome-content-modern">
+                    <div class="welcome-text-modern">
+                        <h1 class="welcome-title-modern">
+                            Xush kelibsiz, {{ user.get_full_name|default:user.username }}!
+                        </h1>
+                        <p class="welcome-subtitle-modern">{{ user.get_role_display }} paneli</p>
+                    </div>
+                    <div class="welcome-badge-modern">
+                        <span class="status-badge-modern {% if user.is_verified %}verified{% else %}pending{% endif %}">
+                            <i class="fas fa-{% if user.is_verified %}check-circle{% else %}clock{% endif %}"></i>
+                            {% if user.is_verified %}Tasdiqlangan{% else %}Kutilmoqda{% endif %}
+                        </span>
+                    </div>
                 </div>
             </div>
-        </div>
 
         {% if not user.is_verified %}
         <!-- Verification Warning -->
@@ -43,262 +43,294 @@
         </div>
         {% endif %}
 
-        <!-- Quick Stats -->
-        <div class="row g-4 mb-4">
-            {% if user.role == 'student' %}
-            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
-                <div class="glass-card p-4 h-100 text-center">
-                    <div class="text-primary mb-3">
-                        <i class="fas fa-tasks fa-2x"></i>
+            <!-- Summary Cards -->
+            <div class="summary-cards-modern mb-4">
+                {% if user.role == 'admin' %}
+                <div class="summary-card-modern summary-card-blue" data-aos="fade-up" data-aos-delay="100">
+                    <div class="summary-card-icon-modern">
+                        <i class="fas fa-user-graduate"></i>
                     </div>
-                    <h4 class="text-white" id="availableTests">--</h4>
-                    <p class="text-white-50 mb-0">Mavjud Testlar</p>
-                </div>
-            </div>
-            
-            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
-                <div class="glass-card p-4 h-100 text-center">
-                    <div class="text-success mb-3">
-                        <i class="fas fa-check-circle fa-2x"></i>
+                    <div class="summary-card-content-modern">
+                        <h3 class="summary-card-value-modern">{{ total_students|default:"--" }}</h3>
+                        <p class="summary-card-label-modern">Jami O'quvchilar</p>
                     </div>
-                    <h4 class="text-white" id="completedTests">--</h4>
-                    <p class="text-white-50 mb-0">Yakunlangan Testlar</p>
                 </div>
-            </div>
-            
-            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
-                <div class="glass-card p-4 h-100 text-center">
-                    <div class="text-warning mb-3">
-                        <i class="fas fa-percentage fa-2x"></i>
+                
+                <div class="summary-card-modern summary-card-green" data-aos="fade-up" data-aos-delay="200">
+                    <div class="summary-card-icon-modern">
+                        <i class="fas fa-chalkboard-teacher"></i>
                     </div>
-                    <h4 class="text-white" id="averageScore">--%</h4>
-                    <p class="text-white-50 mb-0">O'rtacha Ball</p>
-                </div>
-            </div>
-            
-            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
-                <div class="glass-card p-4 h-100 text-center">
-                    <div class="text-info mb-3">
-                        <i class="fas fa-medal fa-2x"></i>
+                    <div class="summary-card-content-modern">
+                        <h3 class="summary-card-value-modern">{{ total_teachers|default:"--" }}</h3>
+                        <p class="summary-card-label-modern">Jami O'qituvchilar</p>
                     </div>
-                    <h4 class="text-white" id="bestScore">--%</h4>
-                    <p class="text-white-50 mb-0">Eng Yaxshi Natija</p>
                 </div>
-            </div>
-            
-            {% elif user.role == 'teacher' %}
-            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
-                <div class="glass-card p-4 h-100 text-center">
-                    <div class="text-primary mb-3">
-                        <i class="fas fa-file-alt fa-2x"></i>
+                
+                <div class="summary-card-modern summary-card-yellow" data-aos="fade-up" data-aos-delay="300">
+                    <div class="summary-card-icon-modern">
+                        <i class="fas fa-clock"></i>
                     </div>
-                    <h4 class="text-white" id="createdTests">--</h4>
-                    <p class="text-white-50 mb-0">Yaratilgan Testlar</p>
-                </div>
-            </div>
-            
-            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
-                <div class="glass-card p-4 h-100 text-center">
-                    <div class="text-success mb-3">
-                        <i class="fas fa-users fa-2x"></i>
+                    <div class="summary-card-content-modern">
+                        <h3 class="summary-card-value-modern">{{ verification_requests_count|default:0 }}</h3>
+                        <p class="summary-card-label-modern">Tasdiq Kutilmoqda</p>
                     </div>
-                    <h4 class="text-white" id="totalAttempts">--</h4>
-                    <p class="text-white-50 mb-0">Jami Urinishlar</p>
                 </div>
-            </div>
-            
-            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
-                <div class="glass-card p-4 h-100 text-center">
-                    <div class="text-warning mb-3">
-                        <i class="fas fa-chart-line fa-2x"></i>
+                
+                <div class="summary-card-modern summary-card-cyan" data-aos="fade-up" data-aos-delay="400">
+                    <div class="summary-card-icon-modern">
+                        <i class="fas fa-file-alt"></i>
                     </div>
-                    <h4 class="text-white" id="avgStudentScore">--%</h4>
-                    <p class="text-white-50 mb-0">O'quvchilar O'rtachasi</p>
-                </div>
-            </div>
-            
-            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
-                <div class="glass-card p-4 h-100 text-center">
-                    <div class="text-info mb-3">
-                        <i class="fas fa-question-circle fa-2x"></i>
+                    <div class="summary-card-content-modern">
+                        <h3 class="summary-card-value-modern">{{ total_tests|default:"--" }}</h3>
+                        <p class="summary-card-label-modern">Jami Testlar</p>
                     </div>
-                    <h4 class="text-white" id="totalQuestions">--</h4>
-                    <p class="text-white-50 mb-0">Jami Savollar</p>
                 </div>
-            </div>
-            
-            {% elif user.role == 'admin' %}
-            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
-                <div class="glass-card p-4 h-100 text-center">
-                    <div class="text-primary mb-3">
-                        <i class="fas fa-user-graduate fa-2x"></i>
+                {% elif user.role == 'student' %}
+                <div class="summary-card-modern summary-card-blue" data-aos="fade-up" data-aos-delay="100">
+                    <div class="summary-card-icon-modern">
+                        <i class="fas fa-tasks"></i>
                     </div>
-                    <h4 class="text-white">{{ total_students|default:"--" }}</h4>
-                    <p class="text-white-50 mb-0">Jami O'quvchilar</p>
-                </div>
-            </div>
-            
-            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
-                <div class="glass-card p-4 h-100 text-center">
-                    <div class="text-success mb-3">
-                        <i class="fas fa-chalkboard-teacher fa-2x"></i>
+                    <div class="summary-card-content-modern">
+                        <h3 class="summary-card-value-modern" id="availableTests">--</h3>
+                        <p class="summary-card-label-modern">Mavjud Testlar</p>
                     </div>
-                    <h4 class="text-white">{{ total_teachers|default:"--" }}</h4>
-                    <p class="text-white-50 mb-0">Jami O'qituvchilar</p>
                 </div>
-            </div>
-            
-            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
-                <div class="glass-card p-4 h-100 text-center">
-                    <div class="text-warning mb-3">
-                        <i class="fas fa-clock fa-2x"></i>
+                
+                <div class="summary-card-modern summary-card-green" data-aos="fade-up" data-aos-delay="200">
+                    <div class="summary-card-icon-modern">
+                        <i class="fas fa-check-circle"></i>
                     </div>
-                    <h4 class="text-white">{{ verification_requests_count|default:0 }}</h4>
-                    <p class="text-white-50 mb-0">Tasdiq Kutilmoqda</p>
-                </div>
-            </div>
-            
-            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
-                <div class="glass-card p-4 h-100 text-center">
-                    <div class="text-info mb-3">
-                        <i class="fas fa-file-alt fa-2x"></i>
+                    <div class="summary-card-content-modern">
+                        <h3 class="summary-card-value-modern" id="completedTests">--</h3>
+                        <p class="summary-card-label-modern">Yakunlangan Testlar</p>
                     </div>
-                    <h4 class="text-white">{{ total_tests|default:"--" }}</h4>
-                    <p class="text-white-50 mb-0">Jami Testlar</p>
                 </div>
+                
+                <div class="summary-card-modern summary-card-yellow" data-aos="fade-up" data-aos-delay="300">
+                    <div class="summary-card-icon-modern">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="summary-card-content-modern">
+                        <h3 class="summary-card-value-modern" id="averageScore">--%</h3>
+                        <p class="summary-card-label-modern">O'rtacha Ball</p>
+                    </div>
+                </div>
+                
+                <div class="summary-card-modern summary-card-cyan" data-aos="fade-up" data-aos-delay="400">
+                    <div class="summary-card-icon-modern">
+                        <i class="fas fa-medal"></i>
+                    </div>
+                    <div class="summary-card-content-modern">
+                        <h3 class="summary-card-value-modern" id="bestScore">--%</h3>
+                        <p class="summary-card-label-modern">Eng Yaxshi Natija</p>
+                    </div>
+                </div>
+                {% elif user.role == 'teacher' %}
+                <div class="summary-card-modern summary-card-blue" data-aos="fade-up" data-aos-delay="100">
+                    <div class="summary-card-icon-modern">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="summary-card-content-modern">
+                        <h3 class="summary-card-value-modern" id="createdTests">--</h3>
+                        <p class="summary-card-label-modern">Yaratilgan Testlar</p>
+                    </div>
+                </div>
+                
+                <div class="summary-card-modern summary-card-green" data-aos="fade-up" data-aos-delay="200">
+                    <div class="summary-card-icon-modern">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="summary-card-content-modern">
+                        <h3 class="summary-card-value-modern" id="totalAttempts">--</h3>
+                        <p class="summary-card-label-modern">Jami Urinishlar</p>
+                    </div>
+                </div>
+                
+                <div class="summary-card-modern summary-card-yellow" data-aos="fade-up" data-aos-delay="300">
+                    <div class="summary-card-icon-modern">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="summary-card-content-modern">
+                        <h3 class="summary-card-value-modern" id="avgStudentScore">--%</h3>
+                        <p class="summary-card-label-modern">O'quvchilar O'rtachasi</p>
+                    </div>
+                </div>
+                
+                <div class="summary-card-modern summary-card-cyan" data-aos="fade-up" data-aos-delay="400">
+                    <div class="summary-card-icon-modern">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <div class="summary-card-content-modern">
+                        <h3 class="summary-card-value-modern" id="totalQuestions">--</h3>
+                        <p class="summary-card-label-modern">Jami Savollar</p>
+                    </div>
+                </div>
+                {% endif %}
             </div>
-            {% endif %}
-        </div>
 
-        <!-- Quick Actions -->
-        <div class="row g-4">
-            <div class="col-lg-8">
-                <div class="glass-card p-4" data-aos="fade-right">
-                    <h4 class="text-white mb-4">
-                        <i class="fas fa-bolt me-2"></i>
-                        Tez Harakatlar
-                    </h4>
-                    
-                    <div class="row g-3">
-                        {% if user.role == 'student' %}
-                        <div class="col-md-6">
-                            <a href="{% url 'tests:tests' %}" class="btn btn-primary w-100 btn-lg">
-                                <i class="fas fa-play me-2"></i>
-                                Testlarni Ko'rish
-                            </a>
-                        </div>
-                        <div class="col-md-6">
-                            <a href="{% url 'accounts:profile' %}" class="btn btn-outline-light w-100 btn-lg">
-                                <i class="fas fa-user-edit me-2"></i>
-                                Profilni Tahrirlash
-                            </a>
+            <!-- Quick Actions and Profile Section -->
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="quick-actions-modern" data-aos="fade-right">
+                        <div class="quick-actions-header-modern">
+                            <h3 class="quick-actions-title-modern">
+                                <i class="fas fa-bolt"></i>
+                                Tez Harakatlar
+                            </h3>
                         </div>
                         
-                        {% elif user.role == 'teacher' %}
-                        <div class="col-md-4">
-                            <a href="{% url 'tests:create_test' %}" class="btn btn-primary w-100 btn-lg">
-                                <i class="fas fa-plus me-2"></i>
-                                Yangi Test Yaratish
+                        <div class="quick-actions-grid-modern">
+                            {% if user.role == 'admin' %}
+                            <a href="{% url 'accounts:analytics' %}" class="quick-action-card-modern quick-action-purple" title="Web Sayt Analitikasi">
+                                <div class="quick-action-icon-modern">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="quick-action-arrow-modern">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
                             </a>
+                            <a href="{% url 'accounts:verification_requests' %}" class="quick-action-card-modern quick-action-green" title="Foydalanuvchilarni Tasdiqlash">
+                                <div class="quick-action-icon-modern">
+                                    <i class="fas fa-user-check"></i>
+                                </div>
+                                <div class="quick-action-arrow-modern">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </a>
+                            <a href="{% url 'tests:tests' %}" class="quick-action-card-modern quick-action-blue" title="Barcha Testlar">
+                                <div class="quick-action-icon-modern">
+                                    <i class="fas fa-tasks"></i>
+                                </div>
+                                <div class="quick-action-arrow-modern">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </a>
+                            <a href="{% url 'tests:all_results' %}" class="quick-action-card-modern quick-action-green-alt" title="Barcha Natijalar">
+                                <div class="quick-action-icon-modern">
+                                    <i class="fas fa-chart-bar"></i>
+                                </div>
+                                <div class="quick-action-arrow-modern">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </a>
+                            <a href="{% url 'tests:retake_requests' %}" class="quick-action-card-modern quick-action-orange" title="Qayta Ishlash">
+                                <div class="quick-action-icon-modern">
+                                    <i class="fas fa-redo"></i>
+                                </div>
+                                <div class="quick-action-arrow-modern">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </a>
+                            <a href="{% url 'tests:student_test_management' %}" class="quick-action-card-modern quick-action-purple-alt" title="Test Boshqaruvi">
+                                <div class="quick-action-icon-modern">
+                                    <i class="fas fa-users-cog"></i>
+                                </div>
+                                <div class="quick-action-arrow-modern">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </a>
+                            {% elif user.role == 'teacher' %}
+                            <a href="{% url 'tests:create_test' %}" class="quick-action-card-modern quick-action-blue" title="Yangi Test Yaratish">
+                                <div class="quick-action-icon-modern">
+                                    <i class="fas fa-plus"></i>
+                                </div>
+                                <div class="quick-action-arrow-modern">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </a>
+                            <a href="{% url 'tests:tests' %}" class="quick-action-card-modern quick-action-green" title="Testlarni Boshqarish">
+                                <div class="quick-action-icon-modern">
+                                    <i class="fas fa-list"></i>
+                                </div>
+                                <div class="quick-action-arrow-modern">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </a>
+                            <a href="{% url 'tests:all_results' %}" class="quick-action-card-modern quick-action-purple" title="Natijalar">
+                                <div class="quick-action-icon-modern">
+                                    <i class="fas fa-chart-bar"></i>
+                                </div>
+                                <div class="quick-action-arrow-modern">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </a>
+                            {% elif user.role == 'student' %}
+                            <a href="{% url 'tests:tests' %}" class="quick-action-card-modern quick-action-blue" title="Testlarni Ko'rish">
+                                <div class="quick-action-icon-modern">
+                                    <i class="fas fa-play"></i>
+                                </div>
+                                <div class="quick-action-arrow-modern">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </a>
+                            <a href="{% url 'accounts:profile' %}" class="quick-action-card-modern quick-action-green" title="Profilni Tahrirlash">
+                                <div class="quick-action-icon-modern">
+                                    <i class="fas fa-user-edit"></i>
+                                </div>
+                                <div class="quick-action-arrow-modern">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </a>
+                            {% endif %}
                         </div>
-                        <div class="col-md-4">
-                            <a href="{% url 'tests:tests' %}" class="btn btn-outline-light w-100 btn-lg">
-                                <i class="fas fa-list me-2"></i>
-                                Testlarni Boshqarish
-                            </a>
-                        </div>
-                        <div class="col-md-4">
-                            <a href="{% url 'tests:all_results' %}" class="btn btn-outline-success w-100 btn-lg">
-                                <i class="fas fa-chart-bar me-2"></i>
-                                Natijalar
-                            </a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="profile-section-modern" data-aos="fade-left">
+                        <div class="profile-header-modern">
+                            <h3 class="profile-title-modern">
+                                <i class="fas fa-user-circle"></i>
+                                Profil Ma'lumoti
+                            </h3>
                         </div>
                         
-                        {% elif user.role == 'admin' %}
-                        <div class="col-md-3">
-                            <a href="{% url 'accounts:verification_requests' %}" class="btn btn-primary w-100 btn-lg">
-                                <i class="fas fa-user-check me-2"></i>
-                                Foydalanuvchilarni Tasdiqlash
+                        <div class="profile-content-modern">
+                            <div class="profile-avatar-modern">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            
+                            <h4 class="profile-name-modern">{{ user.get_full_name|default:user.username }}</h4>
+                            <p class="profile-role-modern">{{ user.get_role_display }}</p>
+                            
+                            <div class="profile-info-modern">
+                                <div class="profile-info-item-modern">
+                                    <i class="fas fa-envelope"></i>
+                                    <span>{{ user.email }}</span>
+                                </div>
+                                {% if user.role == 'student' %}
+                                <div class="profile-info-item-modern">
+                                    <i class="fas fa-graduation-cap"></i>
+                                    <span>{{ user.grade }}-sinf {% if user.class_name %}({{ user.class_name }}){% endif %}</span>
+                                </div>
+                                {% if user.student_id %}
+                                <div class="profile-info-item-modern">
+                                    <i class="fas fa-id-card"></i>
+                                    <span>ID: {{ user.student_id }}</span>
+                                </div>
+                                {% endif %}
+                                {% elif user.role == 'teacher' %}
+                                <div class="profile-info-item-modern">
+                                    <i class="fas fa-book"></i>
+                                    <span>{{ user.subject|default:'Fan belgilanmagan' }}</span>
+                                </div>
+                                {% endif %}
+                                {% if user.phone_number %}
+                                <div class="profile-info-item-modern">
+                                    <i class="fas fa-phone"></i>
+                                    <span>{{ user.phone_number }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <a href="{% url 'accounts:profile' %}" class="profile-edit-btn-modern">
+                                <i class="fas fa-edit"></i>
+                                Tahrirlash
                             </a>
                         </div>
-                        <div class="col-md-3">
-                            <a href="{% url 'tests:all_results' %}" class="btn btn-outline-success w-100 btn-lg">
-                                <i class="fas fa-chart-bar me-2"></i>
-                                Barcha Natijalar
-                            </a>
-                        </div>
-                        <div class="col-md-3">
-                            <a href="/admin/" class="btn btn-outline-light w-100 btn-lg">
-                                <i class="fas fa-cog me-2"></i>
-                                Admin Panel
-                            </a>
-                        </div>
-                        <div class="col-md-3">
-                            <a href="{% url 'tests:tests' %}" class="btn btn-outline-info w-100 btn-lg">
-                                <i class="fas fa-tasks me-2"></i>
-                                Testlar
-                            </a>
-                        </div>
-                        {% endif %}
                     </div>
                 </div>
             </div>
-            
-            <div class="col-lg-4">
-                <div class="glass-card p-4" data-aos="fade-left">
-                    <h4 class="text-white mb-4">
-                        <i class="fas fa-user-circle me-2"></i>
-                        Profil Ma'lumoti
-                    </h4>
-                    
-                    <div class="text-center mb-3">
-                        <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
-                             style="width: 80px; height: 80px;">
-                            <i class="fas fa-user fa-2x text-white"></i>
-                        </div>
-                        <h5 class="text-white mb-1">{{ user.get_full_name|default:user.username }}</h5>
-                        <span class="badge bg-secondary">{{ user.get_role_display }}</span>
-                    </div>
-                    
-                    <ul class="list-unstyled text-white-50">
-                        <li class="mb-2">
-                            <i class="fas fa-envelope me-2"></i>
-                            {{ user.email }}
-                        </li>
-                        {% if user.role == 'student' %}
-                        <li class="mb-2">
-                            <i class="fas fa-graduation-cap me-2"></i>
-                            {{ user.grade }}-sinf {% if user.class_name %}({{ user.class_name }}){% endif %}
-                        </li>
-                        {% if user.student_id %}
-                        <li class="mb-2">
-                            <i class="fas fa-id-card me-2"></i>
-                            ID: {{ user.student_id }}
-                        </li>
-                        {% endif %}
-                        {% elif user.role == 'teacher' %}
-                        <li class="mb-2">
-                            <i class="fas fa-book me-2"></i>
-                            {{ user.subject|default:'Fan belgilanmagan' }}
-                        </li>
-                        {% endif %}
-                        {% if user.phone_number %}
-                        <li class="mb-2">
-                            <i class="fas fa-phone me-2"></i>
-                            {{ user.phone_number }}
-                        </li>
-                        {% endif %}
-                    </ul>
-                    
-                    <div class="text-center mt-3">
-                        <a href="{% url 'accounts:profile' %}" class="btn btn-outline-light">
-                            <i class="fas fa-edit me-1"></i>
-                            Tahrirlash
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
     
     {% if user.role == 'student' and recent_results %}
@@ -405,6 +437,766 @@
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dashboard Container */
+    .dashboard-container {
+        padding: 20px 0;
+    }
+
+    /* Welcome Section Modern */
+    .welcome-section-modern {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 30px 40px;
+        margin-bottom: 30px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .welcome-content-modern {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .welcome-title-modern {
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .welcome-subtitle-modern {
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin: 5px 0 0 0;
+    }
+
+    .status-badge-modern {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .status-badge-modern.verified {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    }
+
+    .status-badge-modern.pending {
+        background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+    }
+
+    /* Summary Cards Modern */
+    .summary-cards-modern {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+        margin-bottom: 40px;
+    }
+
+    .summary-card-modern {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 30px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .summary-card-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .summary-card-modern:hover::before {
+        left: 100%;
+    }
+
+    .summary-card-modern:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .summary-card-icon-modern {
+        width: 70px;
+        height: 70px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        flex-shrink: 0;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .summary-card-modern:hover .summary-card-icon-modern {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .summary-card-content-modern {
+        flex: 1;
+    }
+
+    .summary-card-value-modern {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: white;
+        margin: 0 0 8px 0;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .summary-card-label-modern {
+        font-size: 0.95rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin: 0;
+        font-weight: 500;
+    }
+
+    /* Summary Card Colors */
+    .summary-card-blue .summary-card-icon-modern {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .summary-card-green .summary-card-icon-modern {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        color: white;
+    }
+
+    .summary-card-yellow .summary-card-icon-modern {
+        background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+        color: white;
+    }
+
+    .summary-card-cyan .summary-card-icon-modern {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+
+    /* Quick Actions Modern */
+    .quick-actions-modern {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .quick-actions-header-modern {
+        margin-bottom: 25px;
+    }
+
+    .quick-actions-title-modern {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .quick-actions-title-modern i {
+        color: #FFD700;
+        font-size: 1.3rem;
+    }
+
+    .quick-actions-grid-modern {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 20px;
+    }
+
+    .quick-action-card-modern {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 16px;
+        padding: 25px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        min-height: 140px;
+        text-decoration: none;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .quick-action-card-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .quick-action-card-modern:hover::before {
+        opacity: 1;
+    }
+
+    .quick-action-card-modern:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .quick-action-icon-modern {
+        width: 60px;
+        height: 60px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: white;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .quick-action-card-modern:hover .quick-action-icon-modern {
+        transform: scale(1.15) rotate(5deg);
+    }
+
+    .quick-action-arrow-modern {
+        position: absolute;
+        bottom: 12px;
+        right: 12px;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        font-size: 12px;
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .quick-action-card-modern:hover .quick-action-arrow-modern {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateX(3px);
+    }
+
+    /* Quick Action Colors */
+    .quick-action-purple .quick-action-icon-modern {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .quick-action-green .quick-action-icon-modern {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    }
+
+    .quick-action-blue .quick-action-icon-modern {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .quick-action-green-alt .quick-action-icon-modern {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+
+    .quick-action-orange .quick-action-icon-modern {
+        background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+    }
+
+    .quick-action-purple-alt .quick-action-icon-modern {
+        background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+    }
+
+    /* Profile Section Modern */
+    .profile-section-modern {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        height: 100%;
+    }
+
+    .profile-header-modern {
+        margin-bottom: 25px;
+    }
+
+    .profile-title-modern {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .profile-title-modern i {
+        color: #667eea;
+        font-size: 1.3rem;
+    }
+
+    .profile-content-modern {
+        text-align: center;
+    }
+
+    .profile-avatar-modern {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 45px;
+        color: white;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+    }
+
+    .profile-section-modern:hover .profile-avatar-modern {
+        transform: scale(1.05);
+        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.5);
+    }
+
+    .profile-name-modern {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: white;
+        margin: 0 0 8px 0;
+    }
+
+    .profile-role-modern {
+        font-size: 0.95rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin: 0 0 25px 0;
+        padding: 6px 16px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        display: inline-block;
+    }
+
+    .profile-info-modern {
+        text-align: left;
+        margin-bottom: 25px;
+    }
+
+    .profile-info-item-modern {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 0;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.95rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .profile-info-item-modern:last-child {
+        border-bottom: none;
+    }
+
+    .profile-info-item-modern i {
+        width: 20px;
+        color: #667eea;
+        font-size: 1rem;
+    }
+
+    .profile-edit-btn-modern {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .profile-edit-btn-modern:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .welcome-title-modern {
+            font-size: 1.5rem;
+        }
+
+        .summary-cards-modern {
+            grid-template-columns: 1fr;
+        }
+
+        .quick-actions-grid-modern {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .summary-card-modern {
+            padding: 20px;
+        }
+
+        .summary-card-icon-modern {
+            width: 60px;
+            height: 60px;
+            font-size: 28px;
+        }
+
+        .summary-card-value-modern {
+            font-size: 1.8rem;
+        }
+    }
+
+    /* Modern Professional Admin Cards */
+    .admin-modern-card {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+        position: relative;
+        overflow: visible;
+    }
+
+    .admin-modern-card-inner {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 16px;
+        padding: 18px;
+        height: 100%;
+        min-height: 150px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .admin-modern-card-inner::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, transparent, currentColor, transparent);
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
+    .admin-modern-card:hover .admin-modern-card-inner {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        border-color: rgba(255, 255, 255, 0.25);
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .admin-modern-card:hover .admin-modern-card-inner::before {
+        opacity: 1;
+    }
+
+    .admin-modern-icon-wrapper {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        flex-shrink: 0;
+        margin-bottom: 0;
+    }
+
+    .admin-modern-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        position: relative;
+        z-index: 2;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        margin: 0;
+    }
+
+    .admin-modern-icon-bg {
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        border-radius: 24px;
+        opacity: 0;
+        filter: blur(20px);
+        transition: all 0.6s ease;
+        z-index: 1;
+    }
+
+    .admin-modern-card:hover .admin-modern-icon {
+        transform: scale(1.05);
+    }
+
+    .admin-modern-card:hover .admin-modern-icon-bg {
+        opacity: 0.6;
+        transform: scale(1.2);
+    }
+
+    .admin-modern-content {
+        display: none;
+    }
+
+    .admin-modern-title {
+        display: none;
+    }
+
+    .admin-modern-subtitle {
+        display: none;
+    }
+
+    .admin-modern-arrow {
+        position: absolute;
+        bottom: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(102, 126, 234, 0.3);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        font-size: 12px;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .admin-modern-card:hover .admin-modern-arrow {
+        background: rgba(102, 126, 234, 0.5);
+        transform: translateX(3px) scale(1.05);
+    }
+
+
+    /* Modern Color Variants */
+    .admin-card-primary-modern .admin-modern-icon {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .admin-card-primary-modern .admin-modern-icon-bg {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .admin-card-primary-modern .admin-modern-card-inner::before {
+        background: linear-gradient(90deg, transparent, #667eea, transparent);
+    }
+
+    .admin-card-info-modern .admin-modern-icon {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+
+    .admin-card-info-modern .admin-modern-icon-bg {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .admin-card-info-modern .admin-modern-card-inner::before {
+        background: linear-gradient(90deg, transparent, #4facfe, transparent);
+    }
+
+    .admin-card-success-modern .admin-modern-icon {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        color: white;
+    }
+
+    .admin-card-success-modern .admin-modern-icon-bg {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    }
+
+    .admin-card-success-modern .admin-modern-card-inner::before {
+        background: linear-gradient(90deg, transparent, #4CAF50, transparent);
+    }
+
+    .admin-card-warning-modern .admin-modern-icon {
+        background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+        color: white;
+    }
+
+    .admin-card-warning-modern .admin-modern-icon-bg {
+        background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+    }
+
+    .admin-card-warning-modern .admin-modern-card-inner::before {
+        background: linear-gradient(90deg, transparent, #FF9800, transparent);
+    }
+
+    .admin-card-purple-modern .admin-modern-icon {
+        background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+        color: white;
+    }
+
+    .admin-card-purple-modern .admin-modern-icon-bg {
+        background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+    }
+
+    .admin-card-purple-modern .admin-modern-card-inner::before {
+        background: linear-gradient(90deg, transparent, #9c27b0, transparent);
+    }
+
+    .admin-card-dark-modern .admin-modern-icon {
+        background: linear-gradient(135deg, #424242 0%, #212121 100%);
+        color: white;
+    }
+
+    .admin-card-dark-modern .admin-modern-icon-bg {
+        background: linear-gradient(135deg, #424242 0%, #212121 100%);
+    }
+
+    .admin-card-dark-modern .admin-modern-card-inner::before {
+        background: linear-gradient(90deg, transparent, #616161, transparent);
+    }
+
+
+        .admin-card-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            margin-right: 12px;
+        }
+
+        .admin-card-title {
+            font-size: 14px;
+        }
+
+        .admin-card-desc {
+            font-size: 12px;
+        }
+
+        .admin-card-arrow {
+            width: 28px;
+            height: 28px;
+        }
+    }
+
+    /* Professional Card Entrance Animation */
+    @keyframes modernCardEntrance {
+        0% {
+            opacity: 0;
+            transform: translateY(40px) scale(0.9);
+            filter: blur(10px);
+        }
+        60% {
+            opacity: 0.8;
+            transform: translateY(-5px) scale(1.02);
+            filter: blur(2px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+        }
+    }
+
+    .admin-modern-card {
+        animation: modernCardEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    }
+
+    .admin-modern-card:nth-child(1) { animation-delay: 0.05s; }
+    .admin-modern-card:nth-child(2) { animation-delay: 0.1s; }
+    .admin-modern-card:nth-child(3) { animation-delay: 0.15s; }
+    .admin-modern-card:nth-child(4) { animation-delay: 0.2s; }
+    .admin-modern-card:nth-child(5) { animation-delay: 0.25s; }
+    .admin-modern-card:nth-child(6) { animation-delay: 0.3s; }
+
+    /* Icon pulse animation */
+    @keyframes iconPulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    .admin-modern-icon {
+        animation: iconPulse 3s ease-in-out infinite;
+    }
+
+    .admin-modern-card:hover .admin-modern-icon {
+        animation: none;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .admin-modern-card-inner {
+            padding: 15px;
+            min-height: 140px;
+        }
+
+        .admin-modern-icon-wrapper {
+            width: 70px;
+            height: 70px;
+        }
+
+        .admin-modern-icon {
+            font-size: 32px;
+        }
+
+        .admin-modern-arrow {
+            width: 28px;
+            height: 28px;
+            font-size: 11px;
+            bottom: 10px;
+            right: 10px;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block extra_js %}

@@ -4,46 +4,46 @@
 {% block title %}Buxoro Bilimdonlar Maktabi - Test Platform{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-10">
+<div class="home-page-modern">
+    <div class="container-modern">
         <!-- Hero Section -->
-        <div class="text-center mb-5" data-aos="fade-up">
-            <div class="glass-card p-5">
-                <h1 class="display-4 fw-bold text-white mb-4">
-                    <i class="fas fa-graduation-cap text-warning me-3"></i>
-                    Buxoro Bilimdonlar Maktabi
-                </h1>
-                <h2 class="h3 text-white-50 mb-4">Test Platformasi</h2>
-                <p class="lead text-white-50 mb-4">
+        <div class="hero-section-modern" data-aos="fade-up">
+            <div class="hero-card-modern">
+                <div class="hero-icon-modern">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h1 class="hero-title-modern">Buxoro Bilimdonlar Maktabi</h1>
+                <h2 class="hero-subtitle-modern">Test Platformasi</h2>
+                <p class="hero-description-modern">
                     Zamonaviy va xavfsiz test platformasi orqali bilimingizni sinab ko'ring. 
                     Faqat maktab o'quvchilari uchun maxsus yaratilgan tizim.
                 </p>
                 
                 {% if not user.is_authenticated %}
-                <div class="d-flex gap-3 justify-content-center flex-wrap">
-                    <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-lg pulse-btn">
-                        <i class="fas fa-sign-in-alt me-2"></i>
+                <div class="hero-actions-modern">
+                    <a href="{% url 'accounts:login' %}" class="hero-btn-primary-modern">
+                        <i class="fas fa-sign-in-alt"></i>
                         Tizimga Kirish
                     </a>
-                    <a href="{% url 'accounts:signup' %}" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-user-plus me-2"></i>
+                    <a href="{% url 'accounts:signup' %}" class="hero-btn-secondary-modern">
+                        <i class="fas fa-user-plus"></i>
                         Ro'yxatdan O'tish
                     </a>
                 </div>
                 {% else %}
-                <div class="d-flex gap-3 justify-content-center flex-wrap">
-                    <a href="{% url 'accounts:dashboard' %}" class="btn btn-primary btn-lg pulse-btn">
-                        <i class="fas fa-tachometer-alt me-2"></i>
-                        Dashboard
+                <div class="hero-actions-modern">
+                    <a href="{% url 'accounts:dashboard' %}" class="hero-btn-primary-modern">
+                        <i class="fas fa-tachometer-alt"></i>
+                        DASHBOARD
                     </a>
                     {% if user.role == 'student' %}
-                    <a href="{% url 'tests:tests' %}" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-tasks me-2"></i>
+                    <a href="{% url 'tests:tests' %}" class="hero-btn-secondary-modern">
+                        <i class="fas fa-tasks"></i>
                         Testlarni Ko'rish
                     </a>
                     {% elif user.role == 'teacher' %}
-                    <a href="{% url 'tests:create_test' %}" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-plus-circle me-2"></i>
+                    <a href="{% url 'tests:create_test' %}" class="hero-btn-secondary-modern">
+                        <i class="fas fa-plus-circle"></i>
                         Test Yaratish
                     </a>
                     {% endif %}
@@ -53,101 +53,87 @@
         </div>
 
         <!-- Features Section -->
-        <div class="row g-4 mb-5">
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
-                <div class="glass-card p-4 h-100 text-center">
-                    <div class="text-warning mb-3">
-                        <i class="fas fa-shield-alt fa-3x"></i>
-                    </div>
-                    <h4 class="text-white mb-3">Xavfsiz Tizim</h4>
-                    <p class="text-white-50">
-                        Faqat maktab email manzili orqali ro'yxatdan o'tish mumkin. 
-                        Admin tasdiqlashidan so'ng testlarga kirish imkoniyati.
-                    </p>
+        <div class="features-section-modern">
+            <div class="feature-card-modern feature-card-yellow-modern" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-icon-modern">
+                    <i class="fas fa-shield-alt"></i>
                 </div>
+                <h4 class="feature-title-modern">Xavfsiz Tizim</h4>
+                <p class="feature-description-modern">
+                    Faqat maktab email manzili orqali ro'yxatdan o'tish mumkin. 
+                    Admin tasdiqlashidan so'ng testlarga kirish imkoniyati.
+                </p>
             </div>
             
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
-                <div class="glass-card p-4 h-100 text-center">
-                    <div class="text-success mb-3">
-                        <i class="fas fa-clock fa-3x"></i>
-                    </div>
-                    <h4 class="text-white mb-3">Vaqt Nazorati</h4>
-                    <p class="text-white-50">
-                        Har bir test uchun vaqt limiti belgilanadi. 
-                        Avtomatik yakunlanish va natijalarni ko'rish imkoniyati.
-                    </p>
+            <div class="feature-card-modern feature-card-green-modern" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-icon-modern">
+                    <i class="fas fa-clock"></i>
                 </div>
+                <h4 class="feature-title-modern">Vaqt Nazorati</h4>
+                <p class="feature-description-modern">
+                    Har bir test uchun vaqt limiti belgilanadi. 
+                    Avtomatik yakunlanish va natijalarni ko'rish imkoniyati.
+                </p>
             </div>
             
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
-                <div class="glass-card p-4 h-100 text-center">
-                    <div class="text-info mb-3">
-                        <i class="fas fa-chart-line fa-3x"></i>
-                    </div>
-                    <h4 class="text-white mb-3">Natijalar Tahlili</h4>
-                    <p class="text-white-50">
-                        To'liq natijalar tarixi, o'qituvchi uchun CSV/Excel 
-                        eksport va batafsil tahlil imkoniyati.
-                    </p>
+            <div class="feature-card-modern feature-card-blue-modern" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-icon-modern">
+                    <i class="fas fa-chart-line"></i>
                 </div>
+                <h4 class="feature-title-modern">Natijalar Tahlili</h4>
+                <p class="feature-description-modern">
+                    To'liq natijalar tarixi, o'qituvchi uchun CSV/Excel 
+                    eksport va batafsil tahlil imkoniyati.
+                </p>
             </div>
         </div>
 
         <!-- User Roles Section -->
-        <div class="row g-4 mb-5">
-            <div class="col-12" data-aos="fade-up">
-                <div class="glass-card p-5">
-                    <h3 class="text-white text-center mb-4">
-                        <i class="fas fa-users me-2"></i>
-                        Foydalanuvchi Rollari
-                    </h3>
+        <div class="roles-section-modern" data-aos="fade-up">
+            <div class="roles-card-modern">
+                <h3 class="roles-title-modern">
+                    <i class="fas fa-users"></i>
+                    Foydalanuvchi Rollari
+                </h3>
+                
+                <div class="roles-grid-modern">
+                    <div class="role-card-modern role-card-blue-modern">
+                        <div class="role-icon-modern">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <h5 class="role-name-modern">O'quvchi (Student)</h5>
+                        <ul class="role-features-modern">
+                            <li>
+                                <i class="fas fa-check"></i>
+                                <span>Testlarni yechish</span>
+                            </li>
+                        </ul>
+                    </div>
                     
-                    <div class="row g-4">
-                        <div class="col-lg-4">
-                            <div class="text-center">
-                                <div class="text-primary mb-3">
-                                    <i class="fas fa-user-graduate fa-2x"></i>
-                                </div>
-                                <h5 class="text-white">O'quvchi (Student)</h5>
-                                <ul class="list-unstyled text-white-50 text-start">
-                                    <li><i class="fas fa-check text-success me-2"></i>Testlarni yechish</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Natijalarni ko'rish</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Tarix va statistika</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Profil boshqaruvi</li>
-                                </ul>
-                            </div>
+                    <div class="role-card-modern role-card-yellow-modern">
+                        <div class="role-icon-modern">
+                            <i class="fas fa-chalkboard-teacher"></i>
                         </div>
-                        
-                        <div class="col-lg-4">
-                            <div class="text-center">
-                                <div class="text-warning mb-3">
-                                    <i class="fas fa-chalkboard-teacher fa-2x"></i>
-                                </div>
-                                <h5 class="text-white">O'qituvchi (Teacher)</h5>
-                                <ul class="list-unstyled text-white-50 text-start">
-                                    <li><i class="fas fa-check text-success me-2"></i>Test yaratish</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Savollar yuklash</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Natijalarni ko'rish</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Excel eksport</li>
-                                </ul>
-                            </div>
+                        <h5 class="role-name-modern">O'qituvchi (Teacher)</h5>
+                        <ul class="role-features-modern">
+                            <li>
+                                <i class="fas fa-check"></i>
+                                <span>Test yaratish</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="role-card-modern role-card-red-modern">
+                        <div class="role-icon-modern">
+                            <i class="fas fa-user-shield"></i>
                         </div>
-                        
-                        <div class="col-lg-4">
-                            <div class="text-center">
-                                <div class="text-danger mb-3">
-                                    <i class="fas fa-user-shield fa-2x"></i>
-                                </div>
-                                <h5 class="text-white">Administrator</h5>
-                                <ul class="list-unstyled text-white-50 text-start">
-                                    <li><i class="fas fa-check text-success me-2"></i>Foydalanuvchilarni tasdiqlash</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Barcha natijalarni ko'rish</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Tizim boshqaruvi</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Hisobotlar</li>
-                                </ul>
-                            </div>
-                        </div>
+                        <h5 class="role-name-modern">Administrator</h5>
+                        <ul class="role-features-modern">
+                            <li>
+                                <i class="fas fa-check"></i>
+                                <span>Foydalanuvchilarni tasdiqlash</span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -155,61 +141,59 @@
 
         {% if user.is_authenticated %}
         <!-- Quick Stats for authenticated users -->
-        <div class="row g-4">
-            <div class="col-12" data-aos="fade-up">
-                <div class="glass-card p-4">
-                    <h4 class="text-white text-center mb-4">
-                        <i class="fas fa-chart-pie me-2"></i>
-                        Tezkor Ma'lumot
-                    </h4>
+        <div class="quick-stats-modern" data-aos="fade-up">
+            <div class="quick-stats-card-modern">
+                <h4 class="quick-stats-title-modern">
+                    <i class="fas fa-chart-pie"></i>
+                    Tezkor Ma'lumot
+                </h4>
+                
+                <div class="quick-stats-grid-modern">
+                    <div class="quick-stat-item-modern">
+                        <div class="quick-stat-icon-modern quick-stat-icon-blue-modern">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h5 class="quick-stat-value-modern">{{ user.get_full_name|default:user.username }}</h5>
+                        <p class="quick-stat-label-modern">{{ user.get_role_display }}</p>
+                    </div>
                     
-                    <div class="row text-center">
-                        <div class="col-md-3">
-                            <div class="text-primary">
-                                <i class="fas fa-user fa-2x"></i>
-                            </div>
-                            <h5 class="text-white mt-2">{{ user.get_full_name|default:user.username }}</h5>
-                            <p class="text-white-50">{{ user.get_role_display }}</p>
+                    {% if user.role == 'student' %}
+                    <div class="quick-stat-item-modern">
+                        <div class="quick-stat-icon-modern quick-stat-icon-yellow-modern">
+                            <i class="fas fa-tasks"></i>
                         </div>
-                        
-                        {% if user.role == 'student' %}
-                        <div class="col-md-3">
-                            <div class="text-warning">
-                                <i class="fas fa-tasks fa-2x"></i>
-                            </div>
-                            <h5 class="text-white mt-2">Sinf: {{ user.grade|default:'--' }}</h5>
-                            <p class="text-white-50">{{ user.class_name|default:'Belgilanmagan' }}</p>
+                        <h5 class="quick-stat-value-modern">Sinf: {{ user.grade|default:'--' }}</h5>
+                        <p class="quick-stat-label-modern">{{ user.class_name|default:'Belgilanmagan' }}</p>
+                    </div>
+                    <div class="quick-stat-item-modern">
+                        <div class="quick-stat-icon-modern quick-stat-icon-green-modern">
+                            <i class="fas fa-id-card"></i>
                         </div>
-                        <div class="col-md-3">
-                            <div class="text-success">
-                                <i class="fas fa-id-card fa-2x"></i>
-                            </div>
-                            <h5 class="text-white mt-2">ID: {{ user.student_id|default:'--' }}</h5>
-                            <p class="text-white-50">O'quvchi ID</p>
+                        <h5 class="quick-stat-value-modern">ID: {{ user.student_id|default:'--' }}</h5>
+                        <p class="quick-stat-label-modern">O'quvchi ID</p>
+                    </div>
+                    {% elif user.role == 'teacher' %}
+                    <div class="quick-stat-item-modern">
+                        <div class="quick-stat-icon-modern quick-stat-icon-yellow-modern">
+                            <i class="fas fa-book"></i>
                         </div>
-                        {% elif user.role == 'teacher' %}
-                        <div class="col-md-3">
-                            <div class="text-warning">
-                                <i class="fas fa-book fa-2x"></i>
-                            </div>
-                            <h5 class="text-white mt-2">{{ user.subject|default:'--' }}</h5>
-                            <p class="text-white-50">Fan</p>
+                        <h5 class="quick-stat-value-modern">{{ user.subject|default:'--' }}</h5>
+                        <p class="quick-stat-label-modern">Fan</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="quick-stat-item-modern">
+                        <div class="quick-stat-icon-modern {% if user.is_verified %}quick-stat-icon-green-modern{% else %}quick-stat-icon-yellow-modern{% endif %}">
+                            <i class="fas fa-{% if user.is_verified %}check-circle{% else %}clock{% endif %}"></i>
                         </div>
-                        {% endif %}
-                        
-                        <div class="col-md-3">
-                            <div class="text-info">
-                                <i class="fas fa-{% if user.is_verified %}check-circle{% else %}clock{% endif %} fa-2x"></i>
-                            </div>
-                            <h5 class="text-white mt-2">
-                                {% if user.is_verified %}
-                                    Tasdiqlangan
-                                {% else %}
-                                    Kutilmoqda
-                                {% endif %}
-                            </h5>
-                            <p class="text-white-50">Holat</p>
-                        </div>
+                        <h5 class="quick-stat-value-modern">
+                            {% if user.is_verified %}
+                                Tasdiqlangan
+                            {% else %}
+                                Kutilmoqda
+                            {% endif %}
+                        </h5>
+                        <p class="quick-stat-label-modern">Holat</p>
                     </div>
                 </div>
             </div>
@@ -259,4 +243,936 @@
     `;
     document.head.appendChild(style);
 </script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Home Page Modern Styles */
+    .home-page-modern {
+        padding: 40px 0;
+        min-height: calc(100vh - 200px);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Animated Background Particles */
+    .home-page-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: 
+            radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 40% 20%, rgba(79, 172, 254, 0.1) 0%, transparent 50%);
+        animation: backgroundMove 20s ease-in-out infinite;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    @keyframes backgroundMove {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(-20px, -20px) scale(1.1); }
+    }
+
+    .container-modern {
+        position: relative;
+        z-index: 1;
+    }
+
+    .container-modern {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    /* Hero Section */
+    .hero-section-modern {
+        margin-bottom: 50px;
+    }
+
+    .hero-card-modern {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+        backdrop-filter: blur(30px);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 30px;
+        padding: 70px 50px;
+        text-align: center;
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.3),
+            0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+            0 0 100px rgba(102, 126, 234, 0.2);
+        position: relative;
+        overflow: hidden;
+        animation: cardFloat 6s ease-in-out infinite;
+    }
+
+    @keyframes cardFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .hero-card-modern::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: 
+            radial-gradient(circle, rgba(102, 126, 234, 0.2) 0%, transparent 50%),
+            radial-gradient(circle, rgba(118, 75, 162, 0.15) 0%, transparent 50%);
+        animation: rotate 25s linear infinite;
+        opacity: 0.6;
+    }
+
+    .hero-card-modern::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.1),
+            transparent
+        );
+        animation: shimmer 3s infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    @keyframes shimmer {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+
+    .hero-icon-modern {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 35px;
+        font-size: 60px;
+        color: white;
+        box-shadow: 
+            0 10px 40px rgba(255, 215, 0, 0.5),
+            0 0 0 10px rgba(255, 215, 0, 0.1),
+            0 0 0 20px rgba(255, 215, 0, 0.05);
+        position: relative;
+        z-index: 1;
+        animation: iconPulse 3s ease-in-out infinite;
+    }
+
+    .hero-icon-modern::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        opacity: 0.3;
+        filter: blur(20px);
+        animation: iconGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes iconPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    @keyframes iconGlow {
+        0%, 100% { opacity: 0.3; transform: scale(1); }
+        50% { opacity: 0.6; transform: scale(1.2); }
+    }
+
+    .hero-title-modern {
+        font-size: 3.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 50%, #ffffff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0 0 15px 0;
+        text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        position: relative;
+        z-index: 1;
+        animation: titleShine 3s ease-in-out infinite;
+        letter-spacing: -1px;
+    }
+
+    @keyframes titleShine {
+        0%, 100% { filter: brightness(1); }
+        50% { filter: brightness(1.2); }
+    }
+
+    .hero-subtitle-modern {
+        font-size: 1.8rem;
+        font-weight: 600;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.7) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0 0 25px 0;
+        position: relative;
+        z-index: 1;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .hero-description-modern {
+        font-size: 1.2rem;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.85);
+        margin: 0 0 45px 0;
+        line-height: 1.9;
+        max-width: 750px;
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
+        z-index: 1;
+        letter-spacing: 0.3px;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .hero-actions-modern {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-btn-primary-modern,
+    .hero-btn-secondary-modern {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 36px;
+        border-radius: 14px;
+        font-weight: 800;
+        font-size: 1.15rem;
+        text-decoration: none;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        border: none;
+        cursor: pointer;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .hero-btn-primary-modern {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 
+            0 8px 25px rgba(102, 126, 234, 0.5),
+            0 0 0 0 rgba(102, 126, 234, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-btn-primary-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .hero-btn-primary-modern:hover::before {
+        left: 100%;
+    }
+
+    .hero-btn-primary-modern:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 
+            0 12px 35px rgba(102, 126, 234, 0.6),
+            0 0 0 4px rgba(102, 126, 234, 0.2);
+        color: white;
+        animation: buttonPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes buttonPulse {
+        0%, 100% { box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6), 0 0 0 4px rgba(102, 126, 234, 0.2); }
+        50% { box-shadow: 0 12px 35px rgba(102, 126, 234, 0.8), 0 0 0 8px rgba(102, 126, 234, 0.1); }
+    }
+
+    .hero-btn-secondary-modern {
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(15px);
+        border: 2px solid rgba(255, 255, 255, 0.25);
+        color: white;
+        font-weight: 700;
+    }
+
+    .hero-btn-secondary-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .hero-btn-secondary-modern:hover::before {
+        left: 100%;
+    }
+
+    .hero-btn-secondary-modern:hover {
+        background: rgba(255, 255, 255, 0.18);
+        border-color: rgba(255, 255, 255, 0.35);
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        color: white;
+    }
+
+    /* Features Section */
+    .features-section-modern {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        margin-bottom: 50px;
+    }
+
+    .feature-card-modern {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+        backdrop-filter: blur(25px);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 24px;
+        padding: 45px 35px;
+        text-align: center;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 
+            0 10px 40px rgba(0, 0, 0, 0.2),
+            0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-card-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, transparent, currentColor, transparent);
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
+    .feature-card-modern:hover::before {
+        opacity: 1;
+    }
+
+    .feature-card-modern:hover {
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.3),
+            0 0 0 2px rgba(255, 255, 255, 0.3) inset,
+            0 0 50px rgba(102, 126, 234, 0.2);
+        border-color: rgba(255, 255, 255, 0.4);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+    }
+
+    .feature-icon-modern {
+        width: 90px;
+        height: 90px;
+        border-radius: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 30px;
+        font-size: 45px;
+        color: white;
+        box-shadow: 
+            0 8px 25px rgba(0, 0, 0, 0.3),
+            0 0 0 8px rgba(255, 255, 255, 0.05);
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+    }
+
+    .feature-icon-modern::after {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        right: -5px;
+        bottom: -5px;
+        border-radius: 25px;
+        opacity: 0;
+        filter: blur(15px);
+        transition: all 0.5s ease;
+    }
+
+    .feature-card-modern:hover .feature-icon-modern {
+        transform: scale(1.15) rotate(8deg);
+    }
+
+    .feature-card-modern:hover .feature-icon-modern::after {
+        opacity: 0.6;
+        transform: scale(1.3);
+    }
+
+    .feature-card-yellow-modern .feature-icon-modern {
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    }
+
+    .feature-card-yellow-modern .feature-icon-modern::after {
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    }
+
+    .feature-card-yellow-modern::before {
+        color: #FFD700;
+    }
+
+    .feature-card-green-modern .feature-icon-modern {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    }
+
+    .feature-card-green-modern .feature-icon-modern::after {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    }
+
+    .feature-card-green-modern::before {
+        color: #4CAF50;
+    }
+
+    .feature-card-blue-modern .feature-icon-modern {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .feature-card-blue-modern .feature-icon-modern::after {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .feature-card-blue-modern::before {
+        color: #4facfe;
+    }
+
+    .feature-title-modern {
+        font-size: 1.6rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.9) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0 0 18px 0;
+        letter-spacing: -0.5px;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        position: relative;
+    }
+
+    .feature-description-modern {
+        font-size: 1.05rem;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.85);
+        line-height: 1.85;
+        margin: 0;
+        letter-spacing: 0.2px;
+        text-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Roles Section */
+    .roles-section-modern {
+        margin-bottom: 50px;
+    }
+
+    .roles-card-modern {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.12) 0%, rgba(118, 75, 162, 0.12) 100%);
+        backdrop-filter: blur(30px);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 28px;
+        padding: 55px 45px;
+        box-shadow: 
+            0 15px 50px rgba(0, 0, 0, 0.25),
+            0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+            0 0 80px rgba(102, 126, 234, 0.15);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .roles-card-modern::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
+        opacity: 0.5;
+    }
+
+    .roles-title-modern {
+        font-size: 2.3rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.85) 50%, #ffffff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-align: center;
+        margin: 0 0 45px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        letter-spacing: -1px;
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        z-index: 1;
+    }
+
+    .roles-title-modern i {
+        color: #667eea;
+        font-size: 2rem;
+        filter: drop-shadow(0 2px 8px rgba(102, 126, 234, 0.4));
+    }
+
+    .roles-grid-modern {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+    }
+
+    .role-card-modern {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
+        backdrop-filter: blur(20px);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 22px;
+        padding: 40px 30px;
+        text-align: center;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 
+            0 8px 30px rgba(0, 0, 0, 0.15),
+            0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .role-card-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .role-card-modern:hover::before {
+        left: 100%;
+    }
+
+    .role-card-modern:hover {
+        transform: translateY(-8px) scale(1.03);
+        box-shadow: 
+            0 15px 45px rgba(0, 0, 0, 0.25),
+            0 0 0 2px rgba(255, 255, 255, 0.3) inset,
+            0 0 40px rgba(102, 126, 234, 0.2);
+        border-color: rgba(255, 255, 255, 0.35);
+    }
+
+    .role-icon-modern {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 25px;
+        font-size: 40px;
+        color: white;
+        box-shadow: 
+            0 8px 25px rgba(0, 0, 0, 0.3),
+            0 0 0 6px rgba(255, 255, 255, 0.05);
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+    }
+
+    .role-icon-modern::after {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        right: -8px;
+        bottom: -8px;
+        border-radius: 24px;
+        opacity: 0;
+        filter: blur(12px);
+        transition: all 0.5s ease;
+    }
+
+    .role-card-modern:hover .role-icon-modern {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .role-card-modern:hover .role-icon-modern::after {
+        opacity: 0.5;
+        transform: scale(1.2);
+    }
+
+    .role-card-blue-modern .role-icon-modern {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .role-card-blue-modern .role-icon-modern::after {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .role-card-yellow-modern .role-icon-modern {
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    }
+
+    .role-card-yellow-modern .role-icon-modern::after {
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    }
+
+    .role-card-red-modern .role-icon-modern {
+        background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    }
+
+    .role-card-red-modern .role-icon-modern::after {
+        background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    }
+
+    .role-name-modern {
+        font-size: 1.4rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.9) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0 0 25px 0;
+        letter-spacing: -0.3px;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .role-features-modern {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        text-align: left;
+    }
+
+    .role-features-modern li {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 0;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1rem;
+        font-weight: 500;
+        letter-spacing: 0.2px;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .role-features-modern li:hover {
+        color: white;
+        transform: translateX(5px);
+    }
+
+    .role-features-modern li i {
+        color: #4CAF50;
+        font-size: 1.1rem;
+        filter: drop-shadow(0 2px 4px rgba(76, 175, 80, 0.4));
+        transition: all 0.3s ease;
+    }
+
+    .role-features-modern li:hover i {
+        transform: scale(1.2);
+        filter: drop-shadow(0 2px 8px rgba(76, 175, 80, 0.6));
+    }
+
+    .role-features-modern li span {
+        flex: 1;
+    }
+
+    /* Quick Stats */
+    .quick-stats-modern {
+        margin-bottom: 50px;
+    }
+
+    .quick-stats-card-modern {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+        backdrop-filter: blur(25px);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 26px;
+        padding: 45px;
+        box-shadow: 
+            0 12px 45px rgba(0, 0, 0, 0.2),
+            0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .quick-stats-card-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+        background-size: 200% 100%;
+        animation: gradientMove 3s linear infinite;
+    }
+
+    @keyframes gradientMove {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 200% 50%; }
+    }
+
+    .quick-stats-title-modern {
+        font-size: 2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.85) 50%, #ffffff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-align: center;
+        margin: 0 0 40px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        letter-spacing: -0.5px;
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        z-index: 1;
+    }
+
+    .quick-stats-title-modern i {
+        color: #667eea;
+        font-size: 1.8rem;
+        filter: drop-shadow(0 2px 8px rgba(102, 126, 234, 0.4));
+    }
+
+    .quick-stats-grid-modern {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 25px;
+    }
+
+    .quick-stat-item-modern {
+        text-align: center;
+    }
+
+    .quick-stat-icon-modern {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 25px;
+        font-size: 36px;
+        color: white;
+        box-shadow: 
+            0 8px 25px rgba(0, 0, 0, 0.3),
+            0 0 0 6px rgba(255, 255, 255, 0.05);
+        transition: all 0.4s ease;
+        position: relative;
+    }
+
+    .quick-stat-icon-modern::after {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        right: -5px;
+        bottom: -5px;
+        border-radius: 22px;
+        opacity: 0;
+        filter: blur(10px);
+        transition: all 0.4s ease;
+    }
+
+    .quick-stat-item-modern:hover .quick-stat-icon-modern {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .quick-stat-item-modern:hover .quick-stat-icon-modern::after {
+        opacity: 0.4;
+        transform: scale(1.2);
+    }
+
+    .quick-stat-icon-blue-modern {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .quick-stat-icon-blue-modern::after {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .quick-stat-icon-yellow-modern {
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    }
+
+    .quick-stat-icon-yellow-modern::after {
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    }
+
+    .quick-stat-icon-green-modern {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    }
+
+    .quick-stat-icon-green-modern::after {
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    }
+
+    .quick-stat-value-modern {
+        font-size: 1.3rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.9) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0 0 10px 0;
+        letter-spacing: -0.3px;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .quick-stat-item-modern:hover .quick-stat-value-modern {
+        transform: scale(1.05);
+    }
+
+    .quick-stat-label-modern {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.8);
+        margin: 0;
+        letter-spacing: 0.3px;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .quick-stat-item-modern:hover .quick-stat-label-modern {
+        color: rgba(255, 255, 255, 0.95);
+    }
+
+    /* Additional Typography Enhancements */
+    .hero-btn-primary-modern i,
+    .hero-btn-secondary-modern i {
+        font-size: 1.1rem;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+        transition: all 0.3s ease;
+    }
+
+    .hero-btn-primary-modern:hover i,
+    .hero-btn-secondary-modern:hover i {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    /* Text Selection Styling */
+    ::selection {
+        background: rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+
+    ::-moz-selection {
+        background: rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+
+    /* Smooth Text Rendering */
+    .hero-title-modern,
+    .hero-subtitle-modern,
+    .hero-description-modern,
+    .feature-title-modern,
+    .feature-description-modern,
+    .roles-title-modern,
+    .role-name-modern,
+    .role-features-modern li,
+    .quick-stats-title-modern,
+    .quick-stat-value-modern,
+    .quick-stat-label-modern {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero-title-modern {
+            font-size: 2.2rem;
+        }
+
+        .hero-subtitle-modern {
+            font-size: 1.3rem;
+        }
+
+        .hero-description-modern {
+            font-size: 1rem;
+        }
+
+        .feature-title-modern {
+            font-size: 1.4rem;
+        }
+
+        .feature-description-modern {
+            font-size: 0.95rem;
+        }
+
+        .roles-title-modern {
+            font-size: 1.8rem;
+        }
+
+        .role-name-modern {
+            font-size: 1.2rem;
+        }
+
+        .quick-stats-title-modern {
+            font-size: 1.6rem;
+        }
+
+        .quick-stat-value-modern {
+            font-size: 1.1rem;
+        }
+
+        .hero-btn-primary-modern,
+        .hero-btn-secondary-modern {
+            font-size: 1rem;
+            padding: 14px 28px;
+        }
+
+        .features-section-modern {
+            grid-template-columns: 1fr;
+        }
+
+        .roles-grid-modern {
+            grid-template-columns: 1fr;
+        }
+
+        .hero-card-modern {
+            padding: 40px 25px;
+        }
+
+        .roles-card-modern {
+            padding: 35px 25px;
+        }
+    }
+</style>
 {% endblock %}

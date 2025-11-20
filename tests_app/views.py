@@ -13,6 +13,107 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
 
 @login_required
+@require_http_methods(["POST"])
+def pause_test(request, test_id):
+    """Testni pauza qilish - Admin uchun"""
+    if request.user.role != 'admin':
+        return JsonResponse({'error': 'Access denied'}, status=403)
+    
+    test = get_object_or_404(Test, id=test_id)
+    test.is_paused = True
+    test.paused_at = timezone.now()
+    test.save()
+    
+    return JsonResponse({
+        'success': True,
+        'message': 'Test pauza qilindi',
+        'is_paused': True,
+        'paused_at': test.paused_at.isoformat()
+    })
+
+@login_required
+@require_http_methods(["POST"])
+def resume_test(request, test_id):
+    """Testni davom ettirish - Admin uchun"""
+    if request.user.role != 'admin':
+        return JsonResponse({'error': 'Access denied'}, status=403)
+    
+    test = get_object_or_404(Test, id=test_id)
+    test.is_paused = False
+    test.paused_at = None
+    test.save()
+    
+    return JsonResponse({
+        'success': True,
+        'message': 'Test davom ettirildi',
+        'is_paused': False
+    })
+
+@login_required
+def test_control_view(request, test_id):
+    """Test nazorat sahifasi - Admin uchun"""
+    if request.user.role != 'admin':
+        return JsonResponse({'error': 'Access denied'}, status=403)
+    
+    test = get_object_or_404(Test, id=test_id)
+    
+    # Test yechayotgan o'quvchilar
+    active_attempts = TestAttempt.objects.filter(
+        test=test,
+        is_completed=False
+    ).select_related('student').order_by('-started_at')
+    
+    attempts_data = []
+    for attempt in active_attempts:
+        elapsed_time = timezone.now() - attempt.started_at
+        attempts_data.append({
+            'id': attempt.id,
+            'student_name': attempt.student.get_full_name() or attempt.student.username,
+            'student_username': attempt.student.username,
+            'student_grade': attempt.student.grade,
+            'student_class': attempt.student.class_name,
+            'started_at': attempt.started_at.isoformat(),
+            'elapsed_time': str(elapsed_time).split('.')[0] if elapsed_time else '0:00:00'
+        })
+    
+    context = {
+        'test': test,
+        'active_attempts': attempts_data,
+        'total_active': len(attempts_data)
+    }
+    
+    if request.headers.get('Accept') == 'application/json':
+        return JsonResponse({
+            'test': {
+                'id': test.id,
+                'title': test.title,
+                'is_paused': test.is_paused,
+                'paused_at': test.paused_at.isoformat() if test.paused_at else None,
+                'is_active': test.is_active
+            },
+            'active_attempts': attempts_data,
+            'total_active': len(attempts_data)
+        })
+    
+    return render(request, 'tests_app/test_control.html', context)
+
+@login_required
+def test_time_view(request, test_id):
+    """Server vaqtini qaytarish - Test vaqtini hisoblash uchun"""
+    test = get_object_or_404(Test, id=test_id)
+    
+    # O'quvchi faqat o'z testi uchun vaqtni olishi mumkin
+    if request.user.role == 'student':
+        if test.grade != request.user.grade:
+            return JsonResponse({'error': 'Access denied'}, status=403)
+    
+    return JsonResponse({
+        'server_time': timezone.now().isoformat(),
+        'test_id': test.id,
+        'is_paused': test.is_paused
+    })
+
+@login_required
 def test_list_view(request):
     """List all available tests for students or created tests for teachers"""
     if request.method == 'GET' and request.headers.get('Accept') == 'application/json':
@@ -179,6 +280,9 @@ def take_test_view(request, test_id):
     if test.end_time and now > test.end_time:
         return JsonResponse({'error': 'Test has ended'}, status=403)
     
+    if test.is_paused:
+        return JsonResponse({'error': 'Test hozir pauza qilingan. Iltimos, kuting...'}, status=403)
+    
     if request.method == 'POST':
         existing_attempt = TestAttempt.objects.filter(test=test, student=request.user).first()
         if existing_attempt and existing_attempt.is_completed:
@@ -214,7 +318,14 @@ def take_test_view(request, test_id):
             'attempt_id': attempt.id,
             'questions': questions_data,
             'time_limit': test.time_limit,
-            'started_at': attempt.started_at.isoformat()
+            'started_at': attempt.started_at.isoformat(),
+            'server_time': timezone.now().isoformat()
+        })
+    
+    # GET request uchun server vaqtini qaytarish
+    if request.method == 'GET' and request.headers.get('Accept') == 'application/json':
+        return JsonResponse({
+            'server_time': timezone.now().isoformat()
         })
     
     return render(request, 'tests_app/take_test.html', {'test': test})
@@ -633,6 +744,8 @@ def test_info_view(request, test_id):
         'created_by': test.created_by.get_full_name() or test.created_by.username,
         'created_at': test.created_at.isoformat(),
         'start_time': test.start_time.isoformat() if test.start_time else None,
+        'is_paused': test.is_paused,
+        'paused_at': test.paused_at.isoformat() if test.paused_at else None,
         'end_time': test.end_time.isoformat() if test.end_time else None,
     })
 
@@ -641,6 +754,100 @@ def all_results_view(request):
     """Barcha test natijalarini ko'rsatish - Admin va Teacher uchun"""
     if request.user.role not in ['admin', 'teacher']:
         return JsonResponse({'error': 'Access denied'}, status=403)
+    
+    # Excel export uchun
+    if request.method == 'GET' and request.GET.get('export') == 'excel':
+        grade_filter = request.GET.get('grade', None)
+        
+        # Admin barcha natijalarni ko'radi, Teacher faqat o'z testlari natijalarini
+        if request.user.role == 'admin':
+            attempts = TestAttempt.objects.filter(is_completed=True).select_related(
+                'student', 'test', 'result'
+            )
+        else:  # teacher
+            attempts = TestAttempt.objects.filter(
+                test__created_by=request.user, 
+                is_completed=True
+            ).select_related('student', 'test', 'result')
+        
+        # Sinf bo'yicha filter
+        if grade_filter:
+            attempts = attempts.filter(student__grade=grade_filter)
+        
+        attempts = attempts.order_by('student__grade', 'student__class_name', 'student__first_name', '-finished_at')
+        
+        # Excel fayl yaratish
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Test Natijalari"
+        
+        # Header qo'shish
+        headers = [
+            'O\'quvchi FIO', 'Username', 'Student ID', 'Sinf', 'Sinif', 
+            'Test Nomi', 'Fan', 'Ball', 'Umumiy Ball', 'Foiz', 'Baho',
+            'To\'g\'ri Javoblar', 'Noto\'g\'ri Javoblar', 'Javobsiz', 
+            'Vaqt', 'Sana va Vaqt'
+        ]
+        
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col, value=header)
+            cell.font = Font(bold=True, size=12)
+            cell.fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+            cell.font = Font(bold=True, size=12, color="FFFFFF")
+        
+        # Ma'lumotlarni qo'shish
+        for row, attempt in enumerate(attempts, 2):
+            percentage = attempt.percentage or 0
+            if percentage >= 81:
+                grade = "A'lo"
+            elif percentage >= 61:
+                grade = "Yaxshi"
+            elif percentage >= 31:
+                grade = "Qoniqarli"
+            else:
+                grade = "Qoniqarsiz"
+            
+            student_name = f"{attempt.student.first_name} {attempt.student.last_name}"
+            
+            data = [
+                student_name,
+                attempt.student.username,
+                attempt.student.student_id or '',
+                attempt.student.grade or '',
+                attempt.student.class_name or '',
+                attempt.test.title,
+                attempt.test.subject,
+                attempt.score,
+                attempt.total_points,
+                f"{percentage:.1f}%",
+                grade,
+                attempt.result.correct_answers if hasattr(attempt, 'result') else 0,
+                attempt.result.incorrect_answers if hasattr(attempt, 'result') else 0,
+                attempt.result.unanswered if hasattr(attempt, 'result') else 0,
+                str(attempt.time_taken),
+                attempt.finished_at.strftime('%Y-%m-%d %H:%M:%S')
+            ]
+            
+            for col, value in enumerate(data, 1):
+                ws.cell(row=row, column=col, value=value)
+        
+        # Column width'ni sozlash
+        column_widths = [25, 15, 12, 8, 10, 30, 15, 8, 12, 10, 12, 12, 12, 10, 15, 20]
+        for col, width in enumerate(column_widths, 1):
+            ws.column_dimensions[ws.cell(row=1, column=col).column_letter].width = width
+        
+        # Excel faylini qaytarish
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        filename = 'barcha_test_natijalari'
+        if grade_filter:
+            filename += f'_sinf_{grade_filter}'
+        filename += '.xlsx'
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        wb.save(response)
+        return response
     
     if request.method == 'GET' and request.headers.get('Accept') == 'application/json':
         # Admin barcha natijalarni ko'radi, Teacher faqat o'z testlari natijalarini
@@ -745,11 +952,11 @@ def request_retake_view(request, test_id):
     except Exception as e:
         return JsonResponse({'error': 'Xatolik yuz berdi'}, status=500)
 
-@login_required  
+@login_required
 def retake_requests_view(request):
-    """Admin qayta ishlash so'rovlarini ko'rish va boshqarish"""
-    if request.user.role != 'admin':
-        return JsonResponse({'error': 'Faqat adminlar kirishi mumkin'}, status=403)
+    """Admin va O'qituvchilar qayta ishlash so'rovlarini ko'rish va boshqarish"""
+    if request.user.role not in ['admin', 'teacher']:
+        return JsonResponse({'error': 'Access denied'}, status=403)
     
     if request.method == 'GET' and request.headers.get('Accept') == 'application/json':
         # JSON API so'rovi
@@ -759,6 +966,10 @@ def retake_requests_view(request):
             'student', 'test', 'previous_attempt', 'approved_by'
         ).order_by('-created_at')
         
+        # O'qituvchi uchun faqat o'z testlari so'rovlari
+        if request.user.role == 'teacher':
+            requests_qs = requests_qs.filter(test__created_by=request.user)
+        
         if status_filter != 'all':
             requests_qs = requests_qs.filter(status=status_filter)
         
@@ -766,14 +977,14 @@ def retake_requests_view(request):
         for req in requests_qs:
             requests_data.append({
                 'id': req.id,
-                'student_name': req.student.get_full_name(),
+                'student_name': req.student.get_full_name() or req.student.username,
                 'student_username': req.student.username,
-                'student_grade': req.student.grade,
-                'student_class': req.student.class_name,
+                'student_grade': req.student.grade or '-',
+                'student_class': req.student.class_name or '-',
                 'test_title': req.test.title,
                 'test_subject': req.test.subject,
-                'previous_score': req.previous_attempt.score,
-                'previous_percentage': req.previous_attempt.percentage,
+                'previous_score': req.previous_attempt.score or 0,
+                'previous_percentage': req.previous_attempt.percentage or 0,
                 'reason': req.reason,
                 'status': req.status,
                 'status_display': req.get_status_display(),
@@ -789,16 +1000,22 @@ def retake_requests_view(request):
         })
     
     # HTML template
-    return render(request, 'tests_app/retake_requests.html')
+    return render(request, 'tests_app/retake_requests.html', {
+        'user_role': request.user.role
+    })
 
 @login_required
 @require_http_methods(["POST"])
 def handle_retake_request_view(request, request_id):
-    """Admin qayta ishlash so'rovini tasdiqlash yoki rad etish"""
-    if request.user.role != 'admin':
-        return JsonResponse({'error': 'Faqat adminlar kirishi mumkin'}, status=403)
+    """Admin va O'qituvchilar qayta ishlash so'rovini tasdiqlash yoki rad etish"""
+    if request.user.role not in ['admin', 'teacher']:
+        return JsonResponse({'error': 'Access denied'}, status=403)
     
     retake_request = get_object_or_404(TestRetakeRequest, id=request_id)
+    
+    # O'qituvchi faqat o'z testlari so'rovlarini boshqarishi mumkin
+    if request.user.role == 'teacher' and retake_request.test.created_by != request.user:
+        return JsonResponse({'error': 'Siz faqat o\'z testlaringiz so\'rovlarini boshqarishingiz mumkin'}, status=403)
     
     if retake_request.status != 'pending':
         return JsonResponse({'error': 'Bu so\'rov allaqachon ko\'rib chiqilgan'}, status=400)

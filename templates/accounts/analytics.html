@@ -1,0 +1,2150 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analitika - Buxoro Bilimdonlar Maktabi{% endblock %}
+
+{% block content %}
+<div class="analytics-wrapper">
+    <div class="analytics-container">
+        <!-- Header -->
+        <div class="analytics-header">
+            <h1 class="analytics-main-title">Analytics Dashboard</h1>
+            <div class="analytics-date-badge">{{ "now"|date:"d-M, Y" }}</div>
+        </div>
+
+        <!-- 6 ta kartochka 2x3 grid -->
+        <div class="analytics-grid">
+            <!-- 1. Analytics - Line Graph -->
+            <div class="analytics-card-modern">
+                <div class="card-header-modern">
+                    <h3 class="card-title-modern">Analytics</h3>
+                    <div class="period-toggle">
+                        <button class="period-btn" data-period="week">Week</button>
+                        <button class="period-btn active" data-period="month">Month</button>
+                    </div>
+                </div>
+                <div class="card-chart-container">
+                    <canvas id="lineChart"></canvas>
+                </div>
+                <div class="card-footer-modern">
+                    <span>Batafsil ko'rish uchun bosing</span>
+                </div>
+            </div>
+
+            <!-- 2. Analytics - Task List -->
+            <div class="analytics-card-modern">
+                <div class="card-header-modern">
+                    <h3 class="card-title-modern">Analytics</h3>
+                    <button class="action-btn-modern">All Tasks</button>
+                </div>
+                <div class="card-content-modern">
+                    <div class="task-list-modern">
+                        <div class="task-row-modern">
+                            <div class="task-info">
+                                <span class="task-name">Bugun</span>
+                                <span class="task-number">{{ total_attempts|default:0 }}</span>
+                            </div>
+                        </div>
+                        <div class="task-row-modern">
+                            <div class="task-info">
+                                <span class="task-name">Hafta</span>
+                                <span class="task-number">{{ total_attempts|default:0 }}</span>
+                            </div>
+                            <div class="progress-modern">
+                                <div class="progress-fill" style="width: 50%; background: #4CAF50;"></div>
+                            </div>
+                        </div>
+                        <div class="task-row-modern">
+                            <div class="task-info">
+                                <span class="task-name">Oy</span>
+                                <span class="task-number">{{ total_attempts|default:0 }}</span>
+                            </div>
+                        </div>
+                        <div class="task-row-modern">
+                            <div class="task-info">
+                                <span class="task-name">Yil</span>
+                                <span class="task-number">{{ total_attempts|default:0 }}</span>
+                            </div>
+                            <div class="progress-modern">
+                                <div class="progress-fill" style="width: 30%; background: #667eea;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer-modern">
+                    <span>Batafsil ko'rish uchun bosing</span>
+                </div>
+            </div>
+
+            <!-- 3. Analytics - Progress Circles -->
+            <div class="analytics-card-modern">
+                <div class="card-header-modern">
+                    <h3 class="card-title-modern">Analytics</h3>
+                    <button class="action-btn-modern">All Profit</button>
+                </div>
+                <div class="card-content-modern">
+                    <div class="circles-container">
+                        <div class="circle-item">
+                            <div class="circle-progress" data-percent="0">
+                                <span class="circle-text">0%</span>
+                            </div>
+                            <span class="circle-label">Testlar</span>
+                        </div>
+                        <div class="circle-item">
+                            <div class="circle-progress" data-percent="50" style="background: conic-gradient(#4CAF50 0deg, #4CAF50 180deg, rgba(255,255,255,0.1) 180deg, rgba(255,255,255,0.1) 360deg);">
+                                <span class="circle-text">50%</span>
+                            </div>
+                            <span class="circle-label">O'quvchilar</span>
+                        </div>
+                        <div class="circle-item">
+                            <div class="circle-progress" data-percent="0">
+                                <span class="circle-text">0%</span>
+                            </div>
+                            <span class="circle-label">O'rtacha</span>
+                        </div>
+                    </div>
+                    <div class="days-selector">
+                        <button class="day-selector-btn">Mon</button>
+                        <button class="day-selector-btn">Tue</button>
+                        <button class="day-selector-btn">Wed</button>
+                        <button class="day-selector-btn">Thu</button>
+                        <button class="day-selector-btn active">Fri</button>
+                        <button class="day-selector-btn">Sat</button>
+                        <button class="day-selector-btn">Sun</button>
+                    </div>
+                </div>
+                <div class="card-footer-modern">
+                    <span>Batafsil ko'rish uchun bosing</span>
+                </div>
+            </div>
+
+            <!-- 4. Bugungi Statistika -->
+            <div class="analytics-card-modern">
+                <div class="card-header-modern">
+                    <h3 class="card-title-modern">Bugungi Statistika</h3>
+                </div>
+                <div class="card-content-modern">
+                    <div class="stats-grid-modern">
+                        <div class="stat-box">
+                            <div class="stat-number">{{ total_students|default:0 }}</div>
+                            <div class="stat-details">
+                                <span class="stat-text">Kirganlar</span>
+                                <span class="stat-indicator positive">+100%</span>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">{{ total_teachers|default:0 }}</div>
+                            <div class="stat-details">
+                                <span class="stat-text">Ro'yxat</span>
+                                <span class="stat-tag">+ yangi</span>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">{{ total_tests|default:0 }}</div>
+                            <div class="stat-details">
+                                <span class="stat-text">Testlar</span>
+                                <span class="stat-tag">yangi</span>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">{{ total_attempts|default:0 }}</div>
+                            <div class="stat-details">
+                                <span class="stat-text">Tugallangan</span>
+                                <span class="stat-tag">test</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Tugallanish - Donut Chart -->
+            <div class="analytics-card-modern">
+                <div class="card-header-modern">
+                    <h3 class="card-title-modern">Tugallanish</h3>
+                    <div class="period-toggle">
+                        <button class="period-btn" data-period="week">Week</button>
+                        <button class="period-btn active" data-period="month">Month</button>
+                    </div>
+                </div>
+                <div class="card-content-modern">
+                    <div class="donut-wrapper">
+                        <canvas id="donutChart"></canvas>
+                        <div class="donut-info">
+                            <div class="donut-label">O'rtacha Ball</div>
+                            <div class="donut-value">{{ avg_score|default:0 }}%</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer-modern">
+                    <span>Batafsil ko'rish uchun bosing</span>
+                </div>
+            </div>
+
+            <!-- 6. Haftalik Aktivlik - Bar Chart -->
+            <div class="analytics-card-modern">
+                <div class="card-header-modern">
+                    <h3 class="card-title-modern">Haftalik Aktivlik</h3>
+                </div>
+                <div class="card-content-modern">
+                    <div class="chart-wrapper">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+                <div class="card-footer-modern">
+                    <span>Batafsil ko'rish uchun bosing</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- O'quvchilar va O'qituvchilar ro'yxati -->
+        <div class="users-lists-section" style="margin-top: 30px;">
+            <!-- O'quvchilar ro'yxati -->
+            <div class="analytics-card-modern" style="margin-bottom: 30px;">
+                <div class="card-header-modern">
+                    <h3 class="card-title-modern">
+                        <i class="fas fa-user-graduate me-2"></i>O'quvchilar Ro'yxati
+                    </h3>
+                    <span class="badge-modern">{{ students_list|length }} ta</span>
+                </div>
+                <div class="card-content-modern">
+                    <div class="users-table-container">
+                        <table class="users-table">
+                            <thead>
+                                <tr>
+                                    <th>№</th>
+                                    <th>Ism Familiya</th>
+                                    <th>Username</th>
+                                    <th>Sinf</th>
+                                    <th>Sinif</th>
+                                    <th>Oxirgi Kirish</th>
+                                    <th>Holat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in students_list %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td><strong>{{ student.name }}</strong></td>
+                                    <td>{{ student.username }}</td>
+                                    <td>{{ student.grade }}-sinf</td>
+                                    <td>{{ student.class_name }}</td>
+                                    <td>
+                                        {% if student.last_login != 'Hech qachon' %}
+                                            <span class="time-badge">{{ student.last_login }}</span>
+                                        {% else %}
+                                            <span class="time-badge inactive">Hech qachon</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if student.is_online %}
+                                            <span class="status-badge online">
+                                                <i class="fas fa-circle"></i> Online
+                                            </span>
+                                        {% else %}
+                                            <span class="status-badge offline">
+                                                <i class="fas fa-circle"></i> Offline
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" style="text-align: center; padding: 30px; color: rgba(255,255,255,0.7);">
+                                        O'quvchilar topilmadi
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- O'qituvchilar ro'yxati -->
+            <div class="analytics-card-modern">
+                <div class="card-header-modern">
+                    <h3 class="card-title-modern">
+                        <i class="fas fa-chalkboard-teacher me-2"></i>O'qituvchilar Ro'yxati
+                    </h3>
+                    <span class="badge-modern">{{ teachers_list|length }} ta</span>
+                </div>
+                <div class="card-content-modern">
+                    <div class="users-table-container">
+                        <table class="users-table">
+                            <thead>
+                                <tr>
+                                    <th>№</th>
+                                    <th>Ism Familiya</th>
+                                    <th>Username</th>
+                                    <th>Fan</th>
+                                    <th>Oxirgi Kirish</th>
+                                    <th>Holat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for teacher in teachers_list %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td><strong>{{ teacher.name }}</strong></td>
+                                    <td>{{ teacher.username }}</td>
+                                    <td>{{ teacher.subject }}</td>
+                                    <td>
+                                        {% if teacher.last_login != 'Hech qachon' %}
+                                            <span class="time-badge">{{ teacher.last_login }}</span>
+                                        {% else %}
+                                            <span class="time-badge inactive">Hech qachon</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if teacher.is_online %}
+                                            <span class="status-badge online">
+                                                <i class="fas fa-circle"></i> Online
+                                            </span>
+                                        {% else %}
+                                            <span class="status-badge offline">
+                                                <i class="fas fa-circle"></i> Offline
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 30px; color: rgba(255,255,255,0.7);">
+                                        O'qituvchilar topilmadi
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals for detailed views -->
+<!-- Modal 1: Line Chart Details -->
+<div id="lineChartModal" class="analytics-modal">
+    <div class="modal-content-analytics">
+        <div class="modal-header-analytics">
+            <h2>Batafsil Analytics Grafigi</h2>
+            <button class="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body-analytics">
+            <div class="modal-period-toggle">
+                <button class="modal-period-btn" data-period="week">Week</button>
+                <button class="modal-period-btn active" data-period="month">Month</button>
+            </div>
+            <div class="modal-chart-container">
+                <canvas id="lineChartModalCanvas"></canvas>
+            </div>
+            <div class="modal-stats-grid">
+                <div class="modal-stat-item">
+                    <span class="modal-stat-label">Jami Urinishlar</span>
+                    <span class="modal-stat-value">{{ total_attempts|default:0 }}</span>
+                </div>
+                <div class="modal-stat-item">
+                    <span class="modal-stat-label">O'rtacha Kunlik</span>
+                    <span class="modal-stat-value">{{ total_attempts|default:0 }}</span>
+                </div>
+                <div class="modal-stat-item">
+                    <span class="modal-stat-label">Eng Yuqori</span>
+                    <span class="modal-stat-value">{{ total_attempts|default:0 }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 2: Task List Details -->
+<div id="taskListModal" class="analytics-modal">
+    <div class="modal-content-analytics">
+        <div class="modal-header-analytics">
+            <h2>Barcha Vazifalar</h2>
+            <button class="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body-analytics">
+            <div class="modal-task-list-full">
+                <div class="modal-task-item-full">
+                    <div class="modal-task-header">
+                        <span class="modal-task-title">Bugun</span>
+                        <span class="modal-task-count">{{ total_attempts|default:0 }}</span>
+                    </div>
+                    <div class="modal-task-description">Bugungi barcha test urinishlari</div>
+                </div>
+                <div class="modal-task-item-full">
+                    <div class="modal-task-header">
+                        <span class="modal-task-title">Hafta</span>
+                        <span class="modal-task-count">{{ total_attempts|default:0 }}</span>
+                    </div>
+                    <div class="modal-task-description">Oxirgi 7 kunlik test urinishlari</div>
+                    <div class="modal-progress-full">
+                            <div class="modal-progress-bar" style="width: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                    </div>
+                </div>
+                <div class="modal-task-item-full">
+                    <div class="modal-task-header">
+                        <span class="modal-task-title">Oy</span>
+                        <span class="modal-task-count">{{ total_attempts|default:0 }}</span>
+                    </div>
+                    <div class="modal-task-description">Oxirgi 30 kunlik test urinishlari</div>
+                </div>
+                <div class="modal-task-item-full">
+                    <div class="modal-task-header">
+                        <span class="modal-task-title">Yil</span>
+                        <span class="modal-task-count">{{ total_attempts|default:0 }}</span>
+                    </div>
+                    <div class="modal-task-description">Yillik barcha test urinishlari</div>
+                    <div class="modal-progress-full">
+                        <div class="modal-progress-bar" style="width: 30%; background: #667eea;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 3: Progress Circles Details -->
+<div id="progressModal" class="analytics-modal">
+    <div class="modal-content-analytics">
+        <div class="modal-header-analytics">
+            <h2>Batafsil Progress Ma'lumotlari</h2>
+            <button class="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body-analytics">
+            <div class="modal-days-selector-full">
+                <button class="modal-day-btn">Mon</button>
+                <button class="modal-day-btn">Tue</button>
+                <button class="modal-day-btn">Wed</button>
+                <button class="modal-day-btn">Thu</button>
+                <button class="modal-day-btn active">Fri</button>
+                <button class="modal-day-btn">Sat</button>
+                <button class="modal-day-btn">Sun</button>
+            </div>
+            <div class="modal-circles-full">
+                <div class="modal-circle-item-full">
+                    <div class="modal-circle-large" data-percent="0">
+                        <span class="modal-circle-text">0%</span>
+                    </div>
+                    <h3>Testlar</h3>
+                    <p>Jami testlar soni: {{ total_tests|default:0 }}</p>
+                    <p>Faol testlar: {{ total_tests|default:0 }}</p>
+                </div>
+                <div class="modal-circle-item-full">
+                    <div class="modal-circle-large" data-percent="50" style="background: conic-gradient(#667eea 0deg, #667eea 180deg, rgba(102,126,234,0.2) 180deg, rgba(102,126,234,0.2) 360deg);">
+                        <span class="modal-circle-text">50%</span>
+                    </div>
+                    <h3>O'quvchilar</h3>
+                    <p>Jami o'quvchilar: {{ total_students|default:0 }}</p>
+                    <p>Faol o'quvchilar: {{ total_students|default:0 }}</p>
+                </div>
+                <div class="modal-circle-item-full">
+                    <div class="modal-circle-large" data-percent="0">
+                        <span class="modal-circle-text">0%</span>
+                    </div>
+                    <h3>O'rtacha</h3>
+                    <p>O'rtacha ball: {{ avg_score|default:0 }}%</p>
+                    <p>Jami ball: {{ total_score|default:0 }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 4: Statistics Details -->
+<div id="statisticsModal" class="analytics-modal">
+    <div class="modal-content-analytics">
+        <div class="modal-header-analytics">
+            <h2>Batafsil Statistika</h2>
+            <button class="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body-analytics">
+            <div class="modal-stats-full">
+                <div class="modal-stat-card-full">
+                    <div class="modal-stat-icon">👥</div>
+                    <div class="modal-stat-content">
+                        <h3>Kirganlar</h3>
+                        <div class="modal-stat-number">{{ total_students|default:0 }}</div>
+                        <div class="modal-stat-change positive">+100% o'tgan oyga nisbatan</div>
+                        <p>Jami ro'yxatdan o'tgan foydalanuvchilar soni</p>
+                    </div>
+                </div>
+                <div class="modal-stat-card-full">
+                    <div class="modal-stat-icon">📝</div>
+                    <div class="modal-stat-content">
+                        <h3>Ro'yxat</h3>
+                        <div class="modal-stat-number">{{ total_teachers|default:0 }}</div>
+                        <div class="modal-stat-badge">+ yangi</div>
+                        <p>Yangi ro'yxatdan o'tgan o'qituvchilar</p>
+                    </div>
+                </div>
+                <div class="modal-stat-card-full">
+                    <div class="modal-stat-icon">📊</div>
+                    <div class="modal-stat-content">
+                        <h3>Testlar</h3>
+                        <div class="modal-stat-number">{{ total_tests|default:0 }}</div>
+                        <div class="modal-stat-badge">yangi</div>
+                        <p>Jami yaratilgan testlar soni</p>
+                    </div>
+                </div>
+                <div class="modal-stat-card-full">
+                    <div class="modal-stat-icon">✅</div>
+                    <div class="modal-stat-content">
+                        <h3>Tugallangan</h3>
+                        <div class="modal-stat-number">{{ total_attempts|default:0 }}</div>
+                        <div class="modal-stat-badge">test</div>
+                        <p>Jami tugallangan testlar soni</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 5: Donut Chart Details -->
+<div id="donutModal" class="analytics-modal">
+    <div class="modal-content-analytics">
+        <div class="modal-header-analytics">
+            <h2>Batafsil Baho Taqsimoti</h2>
+            <button class="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body-analytics">
+            <div class="modal-period-toggle">
+                <button class="modal-period-btn" data-period="week">Week</button>
+                <button class="modal-period-btn active" data-period="month">Month</button>
+            </div>
+            <div class="modal-donut-container">
+                <canvas id="donutModalCanvas"></canvas>
+                <div class="modal-donut-legend">
+                    <div class="modal-legend-item">
+                        <span class="modal-legend-color" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></span>
+                        <span class="modal-legend-label">A'lo: {{ grade_distribution_alo|default:0 }}</span>
+                    </div>
+                    <div class="modal-legend-item">
+                        <span class="modal-legend-color" style="background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);"></span>
+                        <span class="modal-legend-label">Yaxshi: {{ grade_distribution_yaxshi|default:0 }}</span>
+                    </div>
+                    <div class="modal-legend-item">
+                        <span class="modal-legend-color" style="background: rgba(102, 126, 234, 0.8);"></span>
+                        <span class="modal-legend-label">Qoniqarli: {{ grade_distribution_qoniqarli|default:0 }}</span>
+                    </div>
+                    <div class="modal-legend-item">
+                        <span class="modal-legend-color" style="background: rgba(118, 75, 162, 0.8);"></span>
+                        <span class="modal-legend-label">Qoniqarsiz: {{ grade_distribution_qoniqarsiz|default:0 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 6: Bar Chart Details -->
+<div id="barChartModal" class="analytics-modal">
+    <div class="modal-content-analytics">
+        <div class="modal-header-analytics">
+            <h2>Batafsil Haftalik Aktivlik</h2>
+            <button class="modal-close-btn">&times;</button>
+        </div>
+        <div class="modal-body-analytics">
+            <div class="modal-chart-container">
+                <canvas id="barChartModalCanvas"></canvas>
+            </div>
+            <div class="modal-week-stats">
+                <div class="modal-week-stat">
+                    <span class="modal-week-label">Jami Aktivlik</span>
+                    <span class="modal-week-value">{{ total_attempts|default:0 }}</span>
+                </div>
+                <div class="modal-week-stat">
+                    <span class="modal-week-label">O'rtacha Kunlik</span>
+                    <span class="modal-week-value">{{ total_attempts|default:0 }}</span>
+                </div>
+                <div class="modal-week-stat">
+                    <span class="modal-week-label">Eng Faol Kun</span>
+                    <span class="modal-week-value">Juma</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .analytics-wrapper {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem 0;
+    }
+
+    .analytics-container {
+        max-width: 1800px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        width: 100%;
+    }
+
+    @media (min-width: 1600px) {
+        .analytics-container {
+            max-width: 2000px;
+        }
+    }
+
+    .analytics-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .analytics-main-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        letter-spacing: -0.5px;
+    }
+
+    .analytics-date-badge {
+        background: rgba(255, 255, 255, 0.15);
+        color: rgba(255, 255, 255, 0.9);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+    }
+
+    .analytics-card-modern {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .analytics-card-modern:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.4);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+    }
+
+    .card-header-modern {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-title-modern {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #fff;
+        margin: 0;
+    }
+
+    .period-toggle {
+        display: flex;
+        gap: 0.25rem;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        padding: 0.25rem;
+    }
+
+    .period-btn {
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.6);
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .period-btn.active {
+        background: #667eea;
+        color: #fff;
+    }
+
+    .period-btn:hover {
+        color: #fff;
+    }
+
+    .action-btn-modern {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: #fff;
+        padding: 0.4rem 0.9rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .action-btn-modern:hover {
+        background: rgba(255, 255, 255, 0.25);
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .card-content-modern {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-chart-container,
+    .chart-wrapper {
+        flex: 1;
+        min-height: 200px;
+        position: relative;
+    }
+
+    .card-footer-modern {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        text-align: center;
+    }
+
+    .card-footer-modern span {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+
+    .card-footer-modern span:hover {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Task List */
+    .task-list-modern {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .task-row-modern {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .task-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .task-name {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+    }
+
+    .task-number {
+        color: #fff;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .progress-modern {
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 2px;
+        transition: width 0.3s ease;
+    }
+
+    /* Progress Circles */
+    .circles-container {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        gap: 1rem;
+    }
+
+    .circle-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .circle-progress {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: conic-gradient(
+            rgba(255, 255, 255, 0.1) 0deg,
+            rgba(255, 255, 255, 0.1) 360deg
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .circle-progress::before {
+        content: '';
+        position: absolute;
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        background: rgba(26, 31, 58, 0.8);
+    }
+
+    .circle-text {
+        position: relative;
+        z-index: 1;
+        color: #fff;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .circle-label {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.75rem;
+        text-align: center;
+    }
+
+    /* Days Selector */
+    .days-selector {
+        display: flex;
+        justify-content: center;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        padding: 0.5rem;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+    }
+
+    .day-selector-btn {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: rgba(255, 255, 255, 0.6);
+        padding: 0.35rem 0.7rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .day-selector-btn:hover,
+    .day-selector-btn.active {
+        background: #667eea;
+        border-color: #667eea;
+        color: #fff;
+    }
+
+    /* Stats Grid */
+    .stats-grid-modern {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .stat-box {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #fff;
+        line-height: 1;
+    }
+
+    .stat-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .stat-text {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.8rem;
+    }
+
+    .stat-indicator {
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .stat-indicator.positive {
+        color: #4CAF50;
+    }
+
+    .stat-tag {
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        display: inline-block;
+        width: fit-content;
+    }
+
+    /* Donut Chart */
+    .donut-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 220px;
+    }
+
+    .donut-info {
+        position: absolute;
+        text-align: center;
+        z-index: 1;
+    }
+
+    .donut-label {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.8rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .donut-value {
+        color: #fff;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    /* Modal Styles */
+    .analytics-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+        animation: fadeIn 0.3s ease;
+    }
+
+    .analytics-modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+        from {
+            transform: translateY(50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .modal-content-analytics {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.15) 100%);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 2rem;
+        max-width: 900px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+        animation: slideUp 0.3s ease;
+        position: relative;
+    }
+
+    .modal-header-analytics {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(102, 126, 234, 0.3);
+    }
+
+    .modal-header-analytics h2 {
+        color: #fff;
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .modal-close-btn {
+        background: rgba(102, 126, 234, 0.2);
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        color: #fff;
+        font-size: 2rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        line-height: 1;
+    }
+
+    .modal-close-btn:hover {
+        background: rgba(102, 126, 234, 0.4);
+        border-color: rgba(102, 126, 234, 0.5);
+        transform: rotate(90deg);
+    }
+
+    .modal-body-analytics {
+        color: #fff;
+    }
+
+    .modal-period-toggle {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+        justify-content: center;
+    }
+
+    .modal-period-btn {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        color: rgba(255, 255, 255, 0.7);
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .modal-period-btn.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: #fff;
+    }
+
+    .modal-period-btn:hover {
+        border-color: rgba(102, 126, 234, 0.5);
+        color: #fff;
+    }
+
+    .modal-chart-container {
+        height: 400px;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .modal-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .modal-stat-item {
+        background: rgba(102, 126, 234, 0.15);
+        padding: 1rem;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid rgba(102, 126, 234, 0.3);
+    }
+
+    .modal-stat-label {
+        display: block;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .modal-stat-value {
+        display: block;
+        color: #fff;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    /* Task List Modal */
+    .modal-task-list-full {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .modal-task-item-full {
+        background: rgba(102, 126, 234, 0.15);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid rgba(102, 126, 234, 0.3);
+    }
+
+    .modal-task-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .modal-task-title {
+        color: #fff;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .modal-task-count {
+        color: #fff;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .modal-task-description {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .modal-progress-full {
+        width: 100%;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        margin-top: 1rem;
+        overflow: hidden;
+    }
+
+    .modal-progress-bar {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+
+    /* Progress Circles Modal */
+    .modal-days-selector-full {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .modal-day-btn {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        color: rgba(255, 255, 255, 0.7);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .modal-day-btn.active,
+    .modal-day-btn:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: #667eea;
+        color: #fff;
+    }
+
+    .modal-circles-full {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    .modal-circle-item-full {
+        text-align: center;
+    }
+
+    .modal-circle-large {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: conic-gradient(
+            rgba(102, 126, 234, 0.2) 0deg,
+            rgba(102, 126, 234, 0.2) 360deg
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        position: relative;
+    }
+
+    .modal-circle-large::before {
+        content: '';
+        position: absolute;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.2) 100%);
+    }
+
+    .modal-circle-text {
+        position: relative;
+        z-index: 1;
+        color: #fff;
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .modal-circle-item-full h3 {
+        color: #fff;
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .modal-circle-item-full p {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        margin: 0.25rem 0;
+    }
+
+    /* Statistics Modal */
+    .modal-stats-full {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    .modal-stat-card-full {
+        background: rgba(102, 126, 234, 0.15);
+        padding: 2rem;
+        border-radius: 16px;
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        text-align: center;
+    }
+
+    .modal-stat-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .modal-stat-content h3 {
+        color: #fff;
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+
+    .modal-stat-number {
+        color: #fff;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .modal-stat-change {
+        color: #667eea;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .modal-stat-badge {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.4) 0%, rgba(118, 75, 162, 0.4) 100%);
+        color: #fff;
+        padding: 0.3rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        display: inline-block;
+        margin-bottom: 0.5rem;
+        border: 1px solid rgba(102, 126, 234, 0.5);
+    }
+
+    .modal-stat-content p {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
+    /* Donut Modal */
+    .modal-donut-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    #donutModalCanvas {
+        max-width: 400px;
+        max-height: 400px;
+    }
+
+    .modal-donut-legend {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        width: 100%;
+    }
+
+    .modal-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: rgba(102, 126, 234, 0.15);
+        border-radius: 8px;
+        border: 1px solid rgba(102, 126, 234, 0.3);
+    }
+
+    .modal-legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
+
+    .modal-legend-label {
+        color: #fff;
+        font-size: 0.9rem;
+    }
+
+    /* Bar Chart Modal */
+    .modal-week-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .modal-week-stat {
+        background: rgba(102, 126, 234, 0.15);
+        padding: 1rem;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid rgba(102, 126, 234, 0.3);
+    }
+
+    .modal-week-label {
+        display: block;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .modal-week-value {
+        display: block;
+        color: #fff;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .analytics-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .analytics-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .analytics-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .stats-grid-modern {
+            grid-template-columns: 1fr;
+        }
+
+        .circles-container {
+            flex-wrap: wrap;
+        }
+
+        .modal-content-analytics {
+            width: 95%;
+            padding: 1.5rem;
+        }
+
+        .modal-circles-full {
+            grid-template-columns: 1fr;
+        }
+
+        .modal-stats-full {
+            grid-template-columns: 1fr;
+        }
+
+        .modal-stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .modal-week-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .modal-donut-legend {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Users Lists Styles */
+    .users-lists-section {
+        margin-top: 30px;
+    }
+
+    .users-table-container {
+        overflow-x: auto;
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .users-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .users-table thead {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .users-table th {
+        padding: 16px 12px;
+        text-align: left;
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .users-table td {
+        padding: 14px 12px;
+        color: rgba(255, 255, 255, 0.9);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 0.9rem;
+    }
+
+    .users-table tbody tr {
+        transition: all 0.3s ease;
+    }
+
+    .users-table tbody tr:hover {
+        background: rgba(102, 126, 234, 0.15);
+        transform: scale(1.01);
+    }
+
+    .users-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .badge-modern {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .time-badge {
+        background: rgba(102, 126, 234, 0.2);
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-block;
+        border: 1px solid rgba(102, 126, 234, 0.4);
+    }
+
+    .time-badge.inactive {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.6);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .status-badge.online {
+        background: linear-gradient(135deg, rgba(76, 175, 80, 0.3) 0%, rgba(56, 142, 60, 0.3) 100%);
+        color: #4CAF50;
+        border: 1px solid rgba(76, 175, 80, 0.5);
+    }
+
+    .status-badge.online i {
+        color: #4CAF50;
+        font-size: 0.7rem;
+        animation: pulseStatus 2s infinite;
+    }
+
+    .status-badge.offline {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .status-badge.offline i {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.7rem;
+    }
+
+    @keyframes pulseStatus {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    // Global chart instances
+    let lineChartInstance = null;
+    let donutChartInstance = null;
+    let barChartInstance = null;
+
+    // Date stats data
+    const dateStats = [
+        {% for stat in date_stats %}
+        { date: '{{ stat.date }}', attempts: {{ stat.attempts }} }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    // Helper function to get week data
+    function getWeekData() {
+        const now = new Date();
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const weekData = dateStats.filter(stat => {
+            const statDate = new Date(stat.date);
+            return statDate >= weekAgo;
+        });
+        
+        const labels = [];
+        const data = [];
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            labels.push(days[date.getDay()]);
+            
+            const stat = weekData.find(s => {
+                const sDate = new Date(s.date);
+                return sDate.toDateString() === date.toDateString();
+            });
+            data.push(stat ? stat.attempts : 0);
+        }
+        return { labels, data };
+    }
+
+    // Helper function to get month data
+    function getMonthData() {
+        const labels = [];
+        const data = [];
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        
+        if (dateStats.length > 0) {
+            const last30Days = dateStats.slice(-30);
+            last30Days.forEach(stat => {
+                const date = new Date(stat.date);
+                labels.push(days[date.getDay()]);
+                data.push(stat.attempts);
+            });
+        } else {
+            // Default data
+            ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon'].forEach((day, i) => {
+                labels.push(day);
+                data.push(i === 7 ? 7 : 0);
+            });
+        }
+        return { labels, data };
+    }
+
+    // Line Chart with Week/Month toggle
+    const lineCtx = document.getElementById('lineChart');
+    if (lineCtx) {
+        const initialData = getMonthData();
+        
+        lineChartInstance = new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: initialData.labels,
+                datasets: [{
+                    label: 'Activity',
+                    data: initialData.data,
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    pointBackgroundColor: '#667eea',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.6)',
+                            font: { size: 10 }
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.6)',
+                            font: { size: 10 }
+                        },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // Week/Month toggle for line chart
+        const lineCard = lineCtx.closest('.analytics-card-modern');
+        const lineToggleBtns = lineCard.querySelectorAll('.period-btn');
+        lineToggleBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const period = this.getAttribute('data-period');
+                lineCard.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const chartData = period === 'week' ? getWeekData() : getMonthData();
+                lineChartInstance.data.labels = chartData.labels;
+                lineChartInstance.data.datasets[0].data = chartData.data;
+                lineChartInstance.update();
+            });
+        });
+    }
+
+    // Donut Chart with Week/Month toggle
+    const donutCtx = document.getElementById('donutChart');
+    if (donutCtx) {
+        const donutData = {
+            week: {
+                alo: {{ grade_distribution_alo|default:0 }},
+                yaxshi: {{ grade_distribution_yaxshi|default:0 }},
+                qoniqarli: {{ grade_distribution_qoniqarli|default:0 }},
+                qoniqarsiz: {{ grade_distribution_qoniqarsiz|default:0 }}
+            },
+            month: {
+                alo: {{ grade_distribution_alo|default:0 }} * 2,
+                yaxshi: {{ grade_distribution_yaxshi|default:0 }} * 2,
+                qoniqarli: {{ grade_distribution_qoniqarli|default:0 }} * 2,
+                qoniqarsiz: {{ grade_distribution_qoniqarsiz|default:0 }} * 2
+            }
+        };
+
+        donutChartInstance = new Chart(donutCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ["A'lo", 'Yaxshi', 'Qoniqarli', 'Qoniqarsiz'],
+                datasets: [{
+                    data: [
+                        donutData.month.alo,
+                        donutData.month.yaxshi,
+                        donutData.month.qoniqarli,
+                        donutData.month.qoniqarsiz
+                    ],
+                    backgroundColor: [
+                        'rgba(76, 175, 80, 0.8)',
+                        'rgba(255, 152, 0, 0.8)',
+                        'rgba(102, 126, 234, 0.8)',
+                        'rgba(244, 67, 54, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(76, 175, 80, 1)',
+                        'rgba(255, 152, 0, 1)',
+                        'rgba(102, 126, 234, 1)',
+                        'rgba(244, 67, 54, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // Week/Month toggle for donut chart
+        const donutCard = donutCtx.closest('.analytics-card-modern');
+        const donutToggleBtns = donutCard.querySelectorAll('.period-btn');
+        donutToggleBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const period = this.getAttribute('data-period');
+                donutCard.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const selectedData = donutData[period];
+                donutChartInstance.data.datasets[0].data = [
+                    selectedData.alo,
+                    selectedData.yaxshi,
+                    selectedData.qoniqarli,
+                    selectedData.qoniqarsiz
+                ];
+                donutChartInstance.update();
+            });
+        });
+    }
+
+    // Bar Chart - Weekly Activity
+    const barCtx = document.getElementById('barChart');
+    if (barCtx) {
+        const weekData = getWeekData();
+        const maxValue = Math.max(...weekData.data, 1);
+        
+        barChartInstance = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: weekData.labels,
+                datasets: [{
+                    label: 'Activity',
+                    data: weekData.data.map(val => val / maxValue),
+                    backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                    borderColor: '#667eea',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 1.0,
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.6)',
+                            font: { size: 10 }
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.6)',
+                            font: { size: 10 }
+                        },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    // Progress Circles with dynamic data
+    function updateProgressCircles(dayIndex) {
+        const circles = document.querySelectorAll('.circle-progress');
+        const circleData = [
+            { percent: Math.floor(Math.random() * 100), color: '#667eea' }, // Testlar
+            { percent: 50 + Math.floor(Math.random() * 30), color: '#4CAF50' }, // O'quvchilar
+            { percent: Math.floor(Math.random() * 80), color: '#FF9800' } // O'rtacha
+        ];
+
+        circles.forEach((circle, index) => {
+            const data = circleData[index];
+            const percent = data.percent;
+            circle.setAttribute('data-percent', percent);
+            circle.style.background = `conic-gradient(
+                ${data.color} 0deg,
+                ${data.color} ${percent * 3.6}deg,
+                rgba(255, 255, 255, 0.1) ${percent * 3.6}deg,
+                rgba(255, 255, 255, 0.1) 360deg
+            )`;
+            
+            const textElement = circle.querySelector('.circle-text');
+            if (textElement) {
+                textElement.textContent = percent + '%';
+            }
+        });
+    }
+
+    // Initialize progress circles
+    updateProgressCircles(4); // Friday by default
+
+    // All Profit button functionality
+    const profitCard = document.querySelector('.analytics-card-modern:nth-child(3)');
+    if (profitCard) {
+        const allProfitBtn = profitCard.querySelector('.action-btn-modern');
+        if (allProfitBtn) {
+            allProfitBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                // Update all circles to show profit data
+                updateProgressCircles(4);
+            });
+        }
+    }
+
+    // Day selector buttons functionality
+    document.querySelectorAll('.day-selector-btn').forEach((btn, index) => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const parent = this.parentElement;
+            parent.querySelectorAll('.day-selector-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Update progress circles based on selected day
+            updateProgressCircles(index);
+        });
+    });
+
+    // All Tasks button functionality
+    const taskCard = document.querySelector('.analytics-card-modern:nth-child(2)');
+    if (taskCard) {
+        const allTasksBtn = taskCard.querySelector('.action-btn-modern');
+        if (allTasksBtn) {
+            allTasksBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                // Show all tasks with expanded view
+                const taskList = taskCard.querySelector('.task-list-modern');
+                taskList.style.maxHeight = taskList.style.maxHeight === 'none' ? '400px' : 'none';
+                taskList.style.overflow = 'auto';
+            });
+        }
+    }
+
+    // Modal functionality
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    }
+
+    // Close modals when clicking outside
+    document.querySelectorAll('.analytics-modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+    });
+
+    // Close button handlers
+    document.querySelectorAll('.modal-close-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const modal = this.closest('.analytics-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+    });
+
+    // Card click handlers - open modals
+    const cards = document.querySelectorAll('.analytics-card-modern');
+    
+    // Card 1: Line Chart
+    if (cards[0]) {
+        cards[0].addEventListener('click', function(e) {
+            if (!e.target.closest('.period-toggle') && !e.target.closest('.card-header-modern')) {
+                openModal('lineChartModal');
+                initLineChartModal();
+            }
+        });
+    }
+
+    // Card 2: Task List
+    if (cards[1]) {
+        cards[1].addEventListener('click', function(e) {
+            if (!e.target.closest('.action-btn-modern') && !e.target.closest('.card-header-modern')) {
+                openModal('taskListModal');
+            }
+        });
+    }
+
+    // Card 3: Progress Circles
+    if (cards[2]) {
+        cards[2].addEventListener('click', function(e) {
+            if (!e.target.closest('.action-btn-modern') && !e.target.closest('.days-selector') && !e.target.closest('.card-header-modern')) {
+                openModal('progressModal');
+                initProgressModal();
+            }
+        });
+    }
+
+    // Card 4: Statistics
+    if (cards[3]) {
+        cards[3].addEventListener('click', function() {
+            openModal('statisticsModal');
+        });
+    }
+
+    // Card 5: Donut Chart
+    if (cards[4]) {
+        cards[4].addEventListener('click', function(e) {
+            if (!e.target.closest('.period-toggle') && !e.target.closest('.card-header-modern')) {
+                openModal('donutModal');
+                initDonutModal();
+            }
+        });
+    }
+
+    // Card 6: Bar Chart
+    if (cards[5]) {
+        cards[5].addEventListener('click', function() {
+            openModal('barChartModal');
+            initBarChartModal();
+        });
+    }
+
+    // Initialize Line Chart Modal
+    let lineChartModalInstance = null;
+    function initLineChartModal() {
+        const canvas = document.getElementById('lineChartModalCanvas');
+        if (canvas && !lineChartModalInstance) {
+            const monthData = getMonthData();
+            lineChartModalInstance = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels: monthData.labels,
+                    datasets: [{
+                        label: 'Activity',
+                        data: monthData.data,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        x: {
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // Modal period toggle
+            document.querySelectorAll('#lineChartModal .modal-period-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#lineChartModal .modal-period-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const period = this.getAttribute('data-period');
+                    const chartData = period === 'week' ? getWeekData() : getMonthData();
+                    lineChartModalInstance.data.labels = chartData.labels;
+                    lineChartModalInstance.data.datasets[0].data = chartData.data;
+                    lineChartModalInstance.update();
+                });
+            });
+        }
+    }
+
+    // Initialize Donut Chart Modal
+    let donutModalInstance = null;
+    function initDonutModal() {
+        const canvas = document.getElementById('donutModalCanvas');
+        if (canvas && !donutModalInstance) {
+            donutModalInstance = new Chart(canvas, {
+                type: 'doughnut',
+                data: {
+                    labels: ["A'lo", 'Yaxshi', 'Qoniqarli', 'Qoniqarsiz'],
+                    datasets: [{
+                        data: [
+                            {{ grade_distribution_alo|default:0 }},
+                            {{ grade_distribution_yaxshi|default:0 }},
+                            {{ grade_distribution_qoniqarli|default:0 }},
+                            {{ grade_distribution_qoniqarsiz|default:0 }}
+                        ],
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.8)',
+                            'rgba(118, 75, 162, 0.8)',
+                            'rgba(102, 126, 234, 0.6)',
+                            'rgba(118, 75, 162, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(102, 126, 234, 1)',
+                            'rgba(118, 75, 162, 1)',
+                            'rgba(102, 126, 234, 1)',
+                            'rgba(118, 75, 162, 1)'
+                        ],
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+    }
+
+    // Initialize Bar Chart Modal
+    let barChartModalInstance = null;
+    function initBarChartModal() {
+        const canvas = document.getElementById('barChartModalCanvas');
+        if (canvas && !barChartModalInstance) {
+            const weekData = getWeekData();
+            const maxValue = Math.max(...weekData.data, 1);
+            barChartModalInstance = new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: weekData.labels,
+                    datasets: [{
+                        label: 'Activity',
+                        data: weekData.data.map(val => val / maxValue),
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: '#667eea',
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1.0,
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        x: {
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // Initialize Progress Modal
+    function initProgressModal() {
+        document.querySelectorAll('#progressModal .modal-day-btn').forEach((btn, index) => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#progressModal .modal-day-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                updateModalProgressCircles(index);
+            });
+        });
+        updateModalProgressCircles(4);
+    }
+
+    function updateModalProgressCircles(dayIndex) {
+        const circles = document.querySelectorAll('#progressModal .modal-circle-large');
+        const circleData = [
+            { percent: Math.floor(Math.random() * 100), color: '#667eea' },
+            { percent: 50 + Math.floor(Math.random() * 30), color: '#764ba2' },
+            { percent: Math.floor(Math.random() * 80), color: '#667eea' }
+        ];
+
+        circles.forEach((circle, index) => {
+            const data = circleData[index];
+            const percent = data.percent;
+            circle.setAttribute('data-percent', percent);
+            circle.style.background = `conic-gradient(
+                ${data.color} 0deg,
+                ${data.color} ${percent * 3.6}deg,
+                rgba(255, 255, 255, 0.1) ${percent * 3.6}deg,
+                rgba(255, 255, 255, 0.1) 360deg
+            )`;
+            const textElement = circle.querySelector('.modal-circle-text');
+            if (textElement) {
+                textElement.textContent = percent + '%';
+            }
+        });
+    }
+
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.analytics-modal.active').forEach(modal => {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -14,7 +14,13 @@
                         <i class="fas fa-redo me-2"></i>
                         Qayta Ishlash So'rovlari
                     </h2>
-                    <p class="text-white-50 mb-0">O'quvchilarning qayta ishlash so'rovlarini ko'rib chiqing</p>
+                    <p class="text-white-50 mb-0">
+                        {% if user.role == 'admin' %}
+                            Barcha o'quvchilarning qayta ishlash so'rovlarini ko'rib chiqing
+                        {% else %}
+                            Sizning testlaringiz bo'yicha qayta ishlash so'rovlarini ko'rib chiqing
+                        {% endif %}
+                    </p>
                 </div>
                 <div>
                     <span class="badge bg-info fs-6" id="totalRequests">0 so'rov</span>

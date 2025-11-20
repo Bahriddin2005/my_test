@@ -330,6 +330,13 @@
                 timeLimit = data.time_limit * 60; // Convert to seconds
                 startTime = new Date(data.started_at);
                 
+                // Server vaqtini olish va offset'ni hisoblash
+                if (data.server_time) {
+                    const serverTime = new Date(data.server_time);
+                    const clientTime = new Date();
+                    serverTimeOffset = serverTime.getTime() - clientTime.getTime();
+                }
+                
                 initializeTest();
                 startTimer();
                 showQuestion(0);
@@ -658,10 +665,59 @@
         modal.hide();
     }
 
+    let isTestPaused = false;
+    let pausedTime = 0;
+    let pauseStartTime = null;
+    let serverTimeOffset = 0; // Server va client vaqt orasidagi farq
+    let lastServerTimeCheck = 0; // Oxirgi server vaqtini tekshirish vaqti
+    const SERVER_TIME_CHECK_INTERVAL = 5000; // 5 soniyada bir marta server vaqtini tekshirish
+
     function startTimer() {
-        const updateTimer = () => {
-            const now = new Date();
-            const elapsed = Math.floor((now - startTime) / 1000);
+        const updateTimer = async () => {
+            if (isTestPaused) {
+                return; // Timer to'xtatilgan
+            }
+
+            // Server vaqtini olish (har 5 soniyada bir marta to'g'ridan-to'g'ri, qolgan vaqtda offset'ni ishlatish)
+            let serverNow;
+            const now = Date.now();
+            
+            if (now - lastServerTimeCheck > SERVER_TIME_CHECK_INTERVAL) {
+                try {
+                    const response = await fetch(`{% url "tests:test_time" test.id %}`, {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        serverNow = new Date(data.server_time);
+                        // Offset'ni yangilash
+                        const clientTime = new Date();
+                        serverTimeOffset = serverNow.getTime() - clientTime.getTime();
+                        lastServerTimeCheck = now;
+                    } else {
+                        // Fallback: offset'ni ishlatish
+                        serverNow = new Date(Date.now() + serverTimeOffset);
+                    }
+                } catch (error) {
+                    // Fallback: offset'ni ishlatish
+                    serverNow = new Date(Date.now() + serverTimeOffset);
+                }
+            } else {
+                // Offset'ni ishlatish (tezroq)
+                serverNow = new Date(Date.now() + serverTimeOffset);
+            }
+
+            // Server vaqtidan boshlanish vaqtini ayirish
+            let elapsed = Math.floor((serverNow - startTime) / 1000);
+            
+            // Pauza vaqtini hisobga olish
+            if (pauseStartTime) {
+                elapsed -= pausedTime;
+                pausedTime += Math.floor((serverNow - pauseStartTime) / 1000);
+            }
+            
             const remaining = Math.max(0, timeLimit - elapsed);
             
             const minutes = Math.floor(remaining / 60);
@@ -691,8 +747,41 @@
             }
         };
         
+        // Timer'ni boshlash
         updateTimer();
         timerInterval = setInterval(updateTimer, 1000);
     }
+
+    // Check test pause status
+    function checkTestStatus() {
+        fetch(`/tests/{{ test.id }}/info/`, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.is_paused && !isTestPaused) {
+                // Test pauza qilindi
+                isTestPaused = true;
+                pauseStartTime = new Date();
+                showAlert('Test pauza qilindi. Iltimos, kuting...', 'warning');
+                document.getElementById('timerCard').style.opacity = '0.5';
+            } else if (!data.is_paused && isTestPaused) {
+                // Test davom ettirildi
+                isTestPaused = false;
+                if (pauseStartTime) {
+                    pausedTime += Math.floor((new Date() - pauseStartTime) / 1000);
+                    pauseStartTime = null;
+                }
+                showAlert('Test davom ettirildi. Davom eting!', 'success');
+                document.getElementById('timerCard').style.opacity = '1';
+            }
+        })
+        .catch(error => console.error('Error checking test status:', error));
+    }
+
+    // Check test status every 3 seconds
+    setInterval(checkTestStatus, 3000);
 </script>
 {% endblock %}

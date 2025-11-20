@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Test Nazorati - {{ test.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="glass-card p-4 mb-4" data-aos="fade-down">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="text-white mb-1">
+                            <i class="fas fa-cog me-2"></i>Test Nazorati
+                        </h2>
+                        <p class="text-white-50 mb-0">{{ test.title }} | {{ test.subject }} | {{ test.grade }}-sinf</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        {% if test.is_paused %}
+                        <button class="btn btn-success btn-lg" onclick="resumeTest()">
+                            <i class="fas fa-play me-2"></i>Davom Ettirish
+                        </button>
+                        {% else %}
+                        <button class="btn btn-warning btn-lg" onclick="pauseTest()">
+                            <i class="fas fa-pause me-2"></i>Pauza Qilish
+                        </button>
+                        {% endif %}
+                        <a href="{% url 'tests:test_results' test.id %}" class="btn btn-info btn-lg">
+                            <i class="fas fa-chart-bar me-2"></i>Natijalar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test Status -->
+            <div class="glass-card p-4 mb-4" data-aos="fade-up">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="stat-box">
+                            <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                            <h3 class="text-white" id="activeCount">{{ total_active }}</h3>
+                            <p class="text-white-50 mb-0">Faol O'quvchilar</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-box">
+                            <i class="fas fa-clock fa-2x text-info mb-2"></i>
+                            <h3 class="text-white">{{ test.time_limit }}</h3>
+                            <p class="text-white-50 mb-0">Vaqt Cheklovi (daqiqa)</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-box">
+                            <i class="fas fa-question-circle fa-2x text-success mb-2"></i>
+                            <h3 class="text-white">{{ test.total_questions }}</h3>
+                            <p class="text-white-50 mb-0">Savollar Soni</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-box">
+                            <i class="fas fa-{% if test.is_paused %}pause{% else %}play{% endif %} fa-2x {% if test.is_paused %}text-warning{% else %}text-success{% endif %} mb-2"></i>
+                            <h3 class="text-white" id="testStatus">{% if test.is_paused %}Pauza{% else %}Faol{% endif %}</h3>
+                            <p class="text-white-50 mb-0">Test Holati</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Students -->
+            <div class="glass-card p-4" data-aos="fade-up" data-aos-delay="100">
+                <h4 class="text-white mb-4">
+                    <i class="fas fa-user-graduate me-2"></i>Test Yechayotgan O'quvchilar
+                </h4>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>O'quvchi</th>
+                                <th>Sinf</th>
+                                <th>Sinif</th>
+                                <th>Boshlangan Vaqt</th>
+                                <th>O'tgan Vaqt</th>
+                                <th>Holat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTable">
+                            {% for attempt in active_attempts %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <strong>{{ attempt.student_name }}</strong><br>
+                                    <small class="text-muted">{{ attempt.student_username }}</small>
+                                </td>
+                                <td>{{ attempt.student_grade }}-sinf</td>
+                                <td>{{ attempt.student_class }}</td>
+                                <td>{{ attempt.started_at|date:"H:i:s" }}</td>
+                                <td id="elapsed-{{ attempt.id }}">{{ attempt.elapsed_time }}</td>
+                                <td>
+                                    <span class="badge bg-success">Faol</span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <i class="fas fa-info-circle fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted mb-0">Hozircha test yechayotgan o'quvchilar yo'q</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stat-box {
+        padding: 20px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+    }
+    .stat-box:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-5px);
+    }
+</style>
+
+<script>
+    const testId = {{ test.id }};
+    let isPaused = {{ test.is_paused|yesno:"true,false" }};
+
+    function pauseTest() {
+        if (!confirm('Testni pauza qilmoqchimisiz? Barcha o\'quvchilar testni to\'xtatadi.')) {
+            return;
+        }
+        
+        fetch(`/tests/${testId}/pause/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                isPaused = true;
+                updateTestStatus();
+                alert('Test pauza qilindi');
+            } else {
+                alert('Xatolik: ' + (data.error || 'Noma\'lum xatolik'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Xatolik yuz berdi');
+        });
+    }
+
+    function resumeTest() {
+        fetch(`/tests/${testId}/resume/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                isPaused = false;
+                updateTestStatus();
+                alert('Test davom ettirildi');
+            } else {
+                alert('Xatolik: ' + (data.error || 'Noma\'lum xatolik'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Xatolik yuz berdi');
+        });
+    }
+
+    function updateTestStatus() {
+        const statusEl = document.getElementById('testStatus');
+        if (isPaused) {
+            statusEl.textContent = 'Pauza';
+            statusEl.parentElement.querySelector('i').className = 'fas fa-pause fa-2x text-warning mb-2';
+        } else {
+            statusEl.textContent = 'Faol';
+            statusEl.parentElement.querySelector('i').className = 'fas fa-play fa-2x text-success mb-2';
+        }
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Auto-refresh every 5 seconds
+    setInterval(() => {
+        fetch(`/tests/${testId}/control/`, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('activeCount').textContent = data.total_active;
+            isPaused = data.test.is_paused;
+            updateTestStatus();
+        })
+        .catch(error => console.error('Error:', error));
+    }, 5000);
+</script>
+{% endblock %}
+

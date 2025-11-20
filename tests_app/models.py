@@ -11,6 +11,8 @@ class Test(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='created_tests')
     time_limit = models.IntegerField(help_text="Time limit in minutes")
     is_active = models.BooleanField(default=True)
+    is_paused = models.BooleanField(default=False, help_text="Test pauza qilinganmi?")
+    paused_at = models.DateTimeField(null=True, blank=True, help_text="Test qachon pauza qilingan")
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     max_attempts = models.IntegerField(default=1)

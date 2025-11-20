@@ -12,4 +12,5 @@ urlpatterns = [
     path('verification-requests/', views.verification_requests_view, name='verification_requests'),
     path('approve-verification/<int:request_id>/', views.approve_verification, name='approve_verification'),
     path('reject-verification/<int:request_id>/', views.reject_verification, name='reject_verification'),
+    path('analytics/', views.analytics_view, name='analytics'),
 ]
