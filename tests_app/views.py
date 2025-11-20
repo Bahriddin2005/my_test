@@ -72,6 +72,32 @@ def test_list_view(request):
                 'tests': test_data,
                 'user_role': 'teacher'
             })
+        
+        elif request.user.role == 'admin':
+            # Admin barcha testlarni ko'radi
+            tests = Test.objects.all().select_related('created_by').order_by('-created_at')
+            test_data = []
+            for test in tests:
+                attempt_count = TestAttempt.objects.filter(test=test, is_completed=True).count()
+                test_data.append({
+                    'id': test.id,
+                    'title': test.title,
+                    'subject': test.subject,
+                    'description': test.description,
+                    'grade': test.grade,
+                    'total_questions': test.total_questions,
+                    'is_active': test.is_active,
+                    'created_at': test.created_at.isoformat(),
+                    'created_by': test.created_by.get_full_name() or test.created_by.username,
+                    'attempt_count': attempt_count,
+                    'max_attempts': test.max_attempts,
+                    'time_limit': test.time_limit,
+                })
+            
+            return JsonResponse({
+                'tests': test_data,
+                'user_role': 'admin'
+            })
     
     return render(request, 'tests_app/test_list.html')
 

@@ -232,9 +232,14 @@ function displayTests(tests, userRole = 'student') {
     const template = document.getElementById('testCardTemplate');
     
     if (tests.length === 0) {
-        const message = userRole === 'teacher' 
-            ? 'Siz hali test yaratmagansiz' 
-            : 'Hozircha sizning sinfingiz uchun testlar mavjud emas';
+        let message = 'Hozircha testlar mavjud emas';
+        if (userRole === 'teacher') {
+            message = 'Siz hali test yaratmagansiz';
+        } else if (userRole === 'admin') {
+            message = 'Hozircha hech qanday test yaratilmagan';
+        } else {
+            message = 'Hozircha sizning sinfingiz uchun testlar mavjud emas';
+        }
             
         container.innerHTML = `
             <div class="col-12 text-center py-5" data-aos="fade-in">
@@ -301,6 +306,34 @@ function displayTests(tests, userRole = 'student') {
                 };
                 // Insert before results button
                 resultsBtn.parentNode.insertBefore(editBtn, resultsBtn);
+        } else if (userRole === 'admin') {
+            // Admin view - show all tests with management options
+            startBtn.classList.add('d-none');
+            continueBtn.classList.add('d-none');
+            completedBadge.classList.add('d-none');
+            
+            // Show results button for admin
+            resultsBtn.classList.remove('d-none');
+            resultsBtn.innerHTML = '<i class="fas fa-chart-line me-2"></i>Natijalarni Ko\'rish';
+            
+            // Show test stats
+            if (test.attempt_count > 0) {
+                progressBar.classList.remove('d-none');
+                progressBar.querySelector('.progress-bar').style.width = '100%';
+                progressBar.querySelector('.progress-bar').textContent = test.attempt_count + ' ta urinish';
+                progressBar.querySelector('.progress-bar').classList.remove('bg-success');
+                progressBar.querySelector('.progress-bar').classList.add('bg-info');
+            }
+            
+            clone.querySelector('.attempts-left').textContent = test.attempt_count + ' ta urinish';
+            
+            // Add status badge
+            if (!test.is_active) {
+                const inactiveBadge = document.createElement('span');
+                inactiveBadge.className = 'badge bg-danger ms-2';
+                inactiveBadge.textContent = 'Nofaol';
+                clone.querySelector('.subject-badge').parentNode.appendChild(inactiveBadge);
+            }
         } else {
             // Student view - original logic
             if (test.has_attempted) {
