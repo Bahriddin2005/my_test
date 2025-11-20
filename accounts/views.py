@@ -133,7 +133,11 @@ def dashboard_view(request):
     }
     
     if request.user.role == 'admin':
+        # Admin uchun statistikalarni hisoblash
         context['verification_requests_count'] = VerificationRequest.objects.filter(is_approved=None).count()
+        context['total_students'] = User.objects.filter(role='student').count()
+        context['total_teachers'] = User.objects.filter(role='teacher').count()
+        context['total_tests'] = Test.objects.count()
     elif request.user.role == 'student':
         # O'quvchi uchun natijalarni olish
         test_results = TestResult.objects.filter(
