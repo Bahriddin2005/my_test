@@ -255,56 +255,143 @@ def create_test(request):
         return JsonResponse({'error': 'Access denied'}, status=403)
     
     try:
-        data = json.loads(request.body)
-        
-        required_fields = ['title', 'subject', 'grade', 'time_limit']
-        for field in required_fields:
-            if not data.get(field):
-                return JsonResponse({'error': f'{field} is required'}, status=400)
-        
-        with transaction.atomic():
-            test = Test.objects.create(
-                title=data['title'],
-                description=data.get('description', ''),
-                subject=data['subject'],
-                grade=int(data['grade']),
-                time_limit=int(data['time_limit']),
-                created_by=request.user,
-                start_time=data.get('start_time'),
-                end_time=data.get('end_time'),
-                max_attempts=data.get('max_attempts', 1),
-                show_results=data.get('show_results', True),
-                shuffle_questions=data.get('shuffle_questions', False)
-            )
+        # FormData yoki JSON formatini qo'llab-quvvatlash
+        if request.content_type and 'multipart/form-data' in request.content_type:
+            # FormData formatida
+            title = request.POST.get('title')
+            subject = request.POST.get('subject')
+            grade = request.POST.get('grade')
+            time_limit = request.POST.get('time_limit')
             
-            questions_data = data.get('questions', [])
-            for i, q_data in enumerate(questions_data):
-                question = Question.objects.create(
-                    test=test,
-                    question_text=q_data['question_text'],
-                    question_type=q_data['question_type'],
-                    points=float(q_data.get('points', 1.0)),
-                    order=i + 1,
-                    explanation=q_data.get('explanation', '')
+            if not all([title, subject, grade, time_limit]):
+                return JsonResponse({'error': 'Barcha majburiy maydonlar to\'ldirilishi kerak'}, status=400)
+            
+            with transaction.atomic():
+                test = Test.objects.create(
+                    title=title,
+                    description=request.POST.get('description', ''),
+                    subject=subject,
+                    grade=int(grade),
+                    time_limit=int(time_limit),
+                    created_by=request.user,
+                    max_attempts=int(request.POST.get('max_attempts', 1)),
+                    show_results=request.POST.get('show_results', 'true') == 'true',
+                    shuffle_questions=request.POST.get('shuffle_questions', 'false') == 'true'
                 )
                 
-                if q_data['question_type'] in ['single_choice', 'multiple_choice']:
-                    choices_data = q_data.get('choices', [])
-                    for choice_data in choices_data:
-                        Choice.objects.create(
-                            question=question,
-                            choice_text=choice_data['text'],
-                            is_correct=choice_data.get('is_correct', False)
-                        )
-        
-        return JsonResponse({
-            'message': 'Test created successfully',
-            'test_id': test.id
-        })
+                # Savollarni qayta ishlash
+                question_texts = request.POST.getlist('question_text[]')
+                question_types = request.POST.getlist('question_type[]')
+                points_list = request.POST.getlist('points[]')
+                explanations = request.POST.getlist('explanation[]')
+                question_images = request.FILES.getlist('question_image[]')
+                
+                for i in range(len(question_texts)):
+                    question = Question.objects.create(
+                        test=test,
+                        question_text=question_texts[i],
+                        question_type=question_types[i],
+                        points=float(points_list[i]) if points_list[i] else 1.0,
+                        order=i + 1,
+                        explanation=explanations[i] if i < len(explanations) else ''
+                    )
+                    
+                    # Rasm yuklash
+                    if i < len(question_images) and question_images[i]:
+                        question.image = question_images[i]
+                        question.save()
+                    
+                    # Variantlarni qayta ishlash
+                    if question_types[i] in ['single_choice', 'multiple_choice']:
+                        choices = request.POST.getlist(f'choices_{i+1}[]')
+                        correct_choice = request.POST.get(f'correct_choice_{i+1}')
+                        
+                        for j, choice_text in enumerate(choices):
+                            if choice_text.strip():
+                                is_correct = str(j) == correct_choice
+                                Choice.objects.create(
+                                    question=question,
+                                    choice_text=choice_text,
+                                    is_correct=is_correct
+                                )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Test muvaffaqiyatli yaratildi',
+                'test_id': test.id
+            })
+        else:
+            # JSON formatida (eski format)
+            data = json.loads(request.body)
+            
+            required_fields = ['title', 'subject', 'grade', 'time_limit']
+            for field in required_fields:
+                if not data.get(field):
+                    return JsonResponse({'error': f'{field} is required'}, status=400)
+            
+            with transaction.atomic():
+                test = Test.objects.create(
+                    title=data['title'],
+                    description=data.get('description', ''),
+                    subject=data['subject'],
+                    grade=int(data['grade']),
+                    time_limit=int(data['time_limit']),
+                    created_by=request.user,
+                    start_time=data.get('start_time'),
+                    end_time=data.get('end_time'),
+                    max_attempts=data.get('max_attempts', 1),
+                    show_results=data.get('show_results', True),
+                    shuffle_questions=data.get('shuffle_questions', False)
+                )
+                
+                questions_data = data.get('questions', [])
+                for i, q_data in enumerate(questions_data):
+                    question = Question.objects.create(
+                        test=test,
+                        question_text=q_data['question_text'],
+                        question_type=q_data['question_type'],
+                        points=float(q_data.get('points', 1.0)),
+                        order=i + 1,
+                        explanation=q_data.get('explanation', '')
+                    )
+                    
+                    # Base64 rasm yuklash (JSON formatida)
+                    if q_data.get('image_base64'):
+                        import base64
+                        from django.core.files.base import ContentFile
+                        from django.core.files.uploadedfile import InMemoryUploadedFile
+                        import io
+                        
+                        try:
+                            format, imgstr = q_data['image_base64'].split(';base64,')
+                            ext = format.split('/')[-1]
+                            data_img = ContentFile(base64.b64decode(imgstr), name=f'question_{question.id}.{ext}')
+                            question.image = data_img
+                            question.save()
+                        except Exception as e:
+                            pass  # Rasm yuklashda xatolik bo'lsa, davom et
+                    
+                    if q_data['question_type'] in ['single_choice', 'multiple_choice']:
+                        choices_data = q_data.get('choices', [])
+                        for choice_data in choices_data:
+                            Choice.objects.create(
+                                question=question,
+                                choice_text=choice_data['text'],
+                                is_correct=choice_data.get('is_correct', False)
+                            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Test created successfully',
+                'test_id': test.id
+            })
         
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON data'}, status=400)
     except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f'Error creating test: {str(e)}', exc_info=True)
         return JsonResponse({'error': str(e)}, status=500)
 
 @login_required
@@ -348,7 +435,8 @@ def take_test_view(request, test_id):
                 'id': question.id,
                 'question_text': question.question_text,
                 'question_type': question.question_type,
-                'points': question.points
+                'points': question.points,
+                'image_url': question.image.url if question.image else None
             }
             
             if question.question_type in ['single_choice', 'multiple_choice']:

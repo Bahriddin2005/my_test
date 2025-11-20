@@ -397,7 +397,14 @@
         
         // Update question display
         document.getElementById('currentQuestionNumber').textContent = index + 1;
-        document.getElementById('questionText').innerHTML = question.question_text;
+        let questionHtml = question.question_text;
+        
+        // Rasmni qo'shish agar mavjud bo'lsa
+        if (question.image_url) {
+            questionHtml += `<div class="mt-3 mb-3"><img src="${question.image_url}" alt="Savol rasmi" class="img-fluid rounded" style="max-width: 100%; max-height: 400px; border: 2px solid rgba(255,255,255,0.2);"></div>`;
+        }
+        
+        document.getElementById('questionText').innerHTML = questionHtml;
         document.getElementById('questionPoints').textContent = `${question.points} ball`;
         
         // Show answer options

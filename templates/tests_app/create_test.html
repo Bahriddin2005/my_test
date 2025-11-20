@@ -149,6 +149,18 @@
                     <label class="form-label text-white">Savol matni</label>
                     <textarea class="form-control glass-input" name="question_text[]" rows="3" required></textarea>
                 </div>
+                <div class="mb-3">
+                    <label class="form-label text-white">
+                        <i class="fas fa-image"></i> Savol rasmi (ixtiyoriy)
+                    </label>
+                    <input type="file" class="form-control glass-input question-image-input" accept="image/*" name="question_image[]">
+                    <div class="question-image-preview mt-2" style="display: none;">
+                        <img src="" alt="Rasm ko'rinishi" class="img-thumbnail" style="max-width: 300px; max-height: 200px;">
+                        <button type="button" class="btn btn-sm btn-danger mt-2 remove-image">
+                            <i class="fas fa-times"></i> Rasmini o'chirish
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="col-md-2">
                 <div class="mb-3">
@@ -242,6 +254,29 @@ document.addEventListener('DOMContentLoaded', function() {
         // Variant qo'shish tugmasi
         clone.querySelector('.add-choice').addEventListener('click', function() {
             addChoice(this);
+        });
+        
+        // Rasm yuklash funksiyasi
+        const imageInput = clone.querySelector('.question-image-input');
+        const imagePreview = clone.querySelector('.question-image-preview');
+        const removeImageBtn = clone.querySelector('.remove-image');
+        
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.querySelector('img').src = e.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        removeImageBtn.addEventListener('click', function() {
+            imageInput.value = '';
+            imagePreview.style.display = 'none';
+            imagePreview.querySelector('img').src = '';
         });
         
         document.getElementById('questionsContainer').appendChild(clone);
