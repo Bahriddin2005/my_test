@@ -118,87 +118,132 @@ def test_list_view(request):
     """List all available tests for students or created tests for teachers"""
     if request.method == 'GET' and request.headers.get('Accept') == 'application/json':
         if request.user.role == 'student':
-            tests = Test.objects.filter(
-                is_active=True,
-                grade=request.user.grade
-            ).select_related('created_by').order_by('-created_at')
-            
-            test_data = []
-            for test in tests:
-                attempt = TestAttempt.objects.filter(test=test, student=request.user).first()
-                test_data.append({
-                    'id': test.id,
-                    'title': test.title,
-                    'subject': test.subject,
-                    'description': test.description,
-                    'grade': test.grade,
-                    'time_limit': test.time_limit,
-                    'max_attempts': test.max_attempts,
-                    'total_questions': test.total_questions,
-                    'has_attempted': attempt is not None,
-                    'attempt_score': round(attempt.percentage, 1) if attempt and attempt.is_completed else None,
-                    'can_attempt': (attempt is None or not attempt.is_completed) and test.is_active,
-                    'created_by': test.created_by.get_full_name() or test.created_by.username,
-                    'created_at': test.created_at.isoformat(),
-                    'start_time': test.start_time.isoformat() if test.start_time else None,
-                    'end_time': test.end_time.isoformat() if test.end_time else None,
+            try:
+                tests = Test.objects.filter(
+                    is_active=True,
+                    grade=request.user.grade
+                ).select_related('created_by').order_by('-created_at')
+                
+                test_data = []
+                for test in tests:
+                    try:
+                        attempt = TestAttempt.objects.filter(test=test, student=request.user).first()
+                        test_data.append({
+                            'id': test.id,
+                            'title': test.title,
+                            'subject': test.subject,
+                            'description': test.description or '',
+                            'grade': test.grade,
+                            'time_limit': test.time_limit,
+                            'max_attempts': test.max_attempts,
+                            'total_questions': test.total_questions,
+                            'has_attempted': attempt is not None,
+                            'attempt_score': round(attempt.percentage, 1) if attempt and attempt.is_completed else None,
+                            'can_attempt': (attempt is None or not attempt.is_completed) and test.is_active,
+                            'created_by': test.created_by.get_full_name() or test.created_by.username if test.created_by else 'Noma\'lum',
+                            'created_at': test.created_at.isoformat() if test.created_at else '',
+                            'start_time': test.start_time.isoformat() if test.start_time else None,
+                            'end_time': test.end_time.isoformat() if test.end_time else None,
+                        })
+                    except Exception as e:
+                        import logging
+                        logger = logging.getLogger(__name__)
+                        logger.error(f'Error processing test {test.id}: {str(e)}')
+                        continue
+                
+                return JsonResponse({
+                    'tests': test_data,
+                    'user_role': 'student'
                 })
-            
-            return JsonResponse({
-                'tests': test_data,
-                'user_role': 'student'
-            })
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f'Error in test_list_view (student): {str(e)}', exc_info=True)
+                return JsonResponse({
+                    'error': 'Testlarni yuklashda xatolik yuz berdi',
+                    'detail': str(e)
+                }, status=500)
             
         elif request.user.role == 'teacher':
-            tests = Test.objects.filter(created_by=request.user).order_by('-created_at')
-            test_data = []
-            for test in tests:
-                attempt_count = TestAttempt.objects.filter(test=test, is_completed=True).count()
-                test_data.append({
-                    'id': test.id,
-                    'title': test.title,
-                    'subject': test.subject,
-                    'description': test.description,
-                    'grade': test.grade,
-                    'total_questions': test.total_questions,
-                    'is_active': test.is_active,
-                    'created_at': test.created_at.isoformat(),
-                    'created_by': test.created_by.get_full_name() or test.created_by.username,
-                    'attempt_count': attempt_count,
-                    'max_attempts': test.max_attempts,
-                    'time_limit': test.time_limit,
+            try:
+                tests = Test.objects.filter(created_by=request.user).order_by('-created_at')
+                test_data = []
+                for test in tests:
+                    try:
+                        attempt_count = TestAttempt.objects.filter(test=test, is_completed=True).count()
+                        test_data.append({
+                            'id': test.id,
+                            'title': test.title,
+                            'subject': test.subject,
+                            'description': test.description or '',
+                            'grade': test.grade,
+                            'total_questions': test.total_questions,
+                            'is_active': test.is_active,
+                            'created_at': test.created_at.isoformat() if test.created_at else '',
+                            'created_by': test.created_by.get_full_name() or test.created_by.username if test.created_by else 'Noma\'lum',
+                            'attempt_count': attempt_count,
+                            'max_attempts': test.max_attempts,
+                            'time_limit': test.time_limit,
+                        })
+                    except Exception as e:
+                        import logging
+                        logger = logging.getLogger(__name__)
+                        logger.error(f'Error processing test {test.id}: {str(e)}')
+                        continue
+                
+                return JsonResponse({
+                    'tests': test_data,
+                    'user_role': 'teacher'
                 })
-            
-            return JsonResponse({
-                'tests': test_data,
-                'user_role': 'teacher'
-            })
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f'Error in test_list_view (teacher): {str(e)}', exc_info=True)
+                return JsonResponse({
+                    'error': 'Testlarni yuklashda xatolik yuz berdi',
+                    'detail': str(e)
+                }, status=500)
         
         elif request.user.role == 'admin':
             # Admin barcha testlarni ko'radi
-            tests = Test.objects.all().select_related('created_by').order_by('-created_at')
-            test_data = []
-            for test in tests:
-                attempt_count = TestAttempt.objects.filter(test=test, is_completed=True).count()
-                test_data.append({
-                    'id': test.id,
-                    'title': test.title,
-                    'subject': test.subject,
-                    'description': test.description,
-                    'grade': test.grade,
-                    'total_questions': test.total_questions,
-                    'is_active': test.is_active,
-                    'created_at': test.created_at.isoformat(),
-                    'created_by': test.created_by.get_full_name() or test.created_by.username,
-                    'attempt_count': attempt_count,
-                    'max_attempts': test.max_attempts,
-                    'time_limit': test.time_limit,
+            try:
+                tests = Test.objects.all().select_related('created_by').order_by('-created_at')
+                test_data = []
+                for test in tests:
+                    try:
+                        attempt_count = TestAttempt.objects.filter(test=test, is_completed=True).count()
+                        test_data.append({
+                            'id': test.id,
+                            'title': test.title,
+                            'subject': test.subject,
+                            'description': test.description or '',
+                            'grade': test.grade,
+                            'total_questions': test.total_questions,
+                            'is_active': test.is_active,
+                            'created_at': test.created_at.isoformat() if test.created_at else '',
+                            'created_by': test.created_by.get_full_name() or test.created_by.username if test.created_by else 'Noma\'lum',
+                            'attempt_count': attempt_count,
+                            'max_attempts': test.max_attempts,
+                            'time_limit': test.time_limit,
+                        })
+                    except Exception as e:
+                        import logging
+                        logger = logging.getLogger(__name__)
+                        logger.error(f'Error processing test {test.id}: {str(e)}')
+                        continue
+                
+                return JsonResponse({
+                    'tests': test_data,
+                    'user_role': 'admin'
                 })
-            
-            return JsonResponse({
-                'tests': test_data,
-                'user_role': 'admin'
-            })
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f'Error in test_list_view (admin): {str(e)}', exc_info=True)
+                return JsonResponse({
+                    'error': 'Testlarni yuklashda xatolik yuz berdi',
+                    'detail': str(e)
+                }, status=500)
     
     return render(request, 'tests_app/test_list.html')
 
@@ -959,45 +1004,68 @@ def retake_requests_view(request):
         return JsonResponse({'error': 'Access denied'}, status=403)
     
     if request.method == 'GET' and request.headers.get('Accept') == 'application/json':
-        # JSON API so'rovi
-        status_filter = request.GET.get('status', 'all')
-        
-        requests_qs = TestRetakeRequest.objects.select_related(
-            'student', 'test', 'previous_attempt', 'approved_by'
-        ).order_by('-created_at')
-        
-        # O'qituvchi uchun faqat o'z testlari so'rovlari
-        if request.user.role == 'teacher':
-            requests_qs = requests_qs.filter(test__created_by=request.user)
-        
-        if status_filter != 'all':
-            requests_qs = requests_qs.filter(status=status_filter)
-        
-        requests_data = []
-        for req in requests_qs:
-            requests_data.append({
-                'id': req.id,
-                'student_name': req.student.get_full_name() or req.student.username,
-                'student_username': req.student.username,
-                'student_grade': req.student.grade or '-',
-                'student_class': req.student.class_name or '-',
-                'test_title': req.test.title,
-                'test_subject': req.test.subject,
-                'previous_score': req.previous_attempt.score or 0,
-                'previous_percentage': req.previous_attempt.percentage or 0,
-                'reason': req.reason,
-                'status': req.status,
-                'status_display': req.get_status_display(),
-                'admin_response': req.admin_response,
-                'approved_by': req.approved_by.get_full_name() if req.approved_by else None,
-                'created_at': req.created_at.isoformat(),
-                'updated_at': req.updated_at.isoformat()
+        try:
+            # JSON API so'rovi
+            status_filter = request.GET.get('status', 'all')
+            
+            requests_qs = TestRetakeRequest.objects.select_related(
+                'student', 'test', 'previous_attempt', 'approved_by'
+            ).order_by('-created_at')
+            
+            # O'qituvchi uchun faqat o'z testlari so'rovlari
+            if request.user.role == 'teacher':
+                requests_qs = requests_qs.filter(test__created_by=request.user)
+            
+            if status_filter != 'all':
+                requests_qs = requests_qs.filter(status=status_filter)
+            
+            requests_data = []
+            for req in requests_qs:
+                try:
+                    # previous_attempt None bo'lishi mumkinligini tekshirish
+                    previous_score = 0
+                    previous_percentage = 0
+                    if req.previous_attempt:
+                        previous_score = req.previous_attempt.score or 0
+                        previous_percentage = req.previous_attempt.percentage or 0
+                    
+                    requests_data.append({
+                        'id': req.id,
+                        'student_name': req.student.get_full_name() or req.student.username,
+                        'student_username': req.student.username,
+                        'student_grade': req.student.grade or '-',
+                        'student_class': req.student.class_name or '-',
+                        'test_title': req.test.title,
+                        'test_subject': req.test.subject,
+                        'previous_score': previous_score,
+                        'previous_percentage': previous_percentage,
+                        'reason': req.reason or '',
+                        'status': req.status,
+                        'status_display': req.get_status_display(),
+                        'admin_response': req.admin_response or '',
+                        'approved_by': req.approved_by.get_full_name() if req.approved_by else None,
+                        'created_at': req.created_at.isoformat() if req.created_at else '',
+                        'updated_at': req.updated_at.isoformat() if req.updated_at else ''
+                    })
+                except Exception as e:
+                    # Xatolikni log qilish va davom etish
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f'Error processing retake request {req.id}: {str(e)}')
+                    continue
+            
+            return JsonResponse({
+                'requests': requests_data,
+                'total_count': len(requests_data)
             })
-        
-        return JsonResponse({
-            'requests': requests_data,
-            'total_count': len(requests_data)
-        })
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f'Error in retake_requests_view: {str(e)}', exc_info=True)
+            return JsonResponse({
+                'error': 'Ma\'lumotlarni yuklashda xatolik yuz berdi',
+                'detail': str(e)
+            }, status=500)
     
     # HTML template
     return render(request, 'tests_app/retake_requests.html', {

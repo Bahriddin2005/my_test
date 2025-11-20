@@ -41,6 +41,7 @@ class Question(models.Model):
     
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='questions')
     question_text = models.TextField()
+    question_image = models.ImageField(upload_to='question_images/', blank=True, null=True, help_text="Savol uchun rasm (ixtiyoriy)")
     question_type = models.CharField(max_length=15, choices=QUESTION_TYPES)
     points = models.FloatField(default=1.0)
     order = models.IntegerField(default=0)

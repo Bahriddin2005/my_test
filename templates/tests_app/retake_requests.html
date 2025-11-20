@@ -147,15 +147,18 @@ async function loadRetakeRequests() {
         
         if (response.ok) {
             const data = await response.json();
-            currentRequests = data.requests;
-            updateTotalCount(data.total_count);
+            currentRequests = data.requests || [];
+            updateTotalCount(data.total_count || 0);
             displayRequests(currentRequests);
         } else {
-            showError('Ma\'lumotlarni yuklashda xatolik');
+            const errorData = await response.json().catch(() => ({}));
+            const errorMessage = errorData.error || errorData.detail || 'Ma\'lumotlarni yuklashda xatolik';
+            console.error('Error response:', errorData);
+            showError(errorMessage);
         }
     } catch (error) {
         console.error('Error loading retake requests:', error);
-        showError('Server bilan bog\'lanishda xatolik');
+        showError('Server bilan bog\'lanishda xatolik: ' + error.message);
     } finally {
         showLoading(false);
     }

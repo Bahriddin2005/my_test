@@ -261,34 +261,80 @@ let currentUserRole = '{{ user.role }}' || 'student';
 
 async function loadTests() {
     try {
+        showLoading(true);
         const response = await fetch('/tests/', {
             headers: {
                 'Accept': 'application/json'
             }
         });
-        const data = await response.json();
-        currentUserRole = data.user_role || currentUserRole;
-        displayTests(data.tests || [], currentUserRole);
+        
+        if (response.ok) {
+            const data = await response.json();
+            currentUserRole = data.user_role || currentUserRole;
+            displayTests(data.tests || [], currentUserRole);
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            const errorMessage = errorData.error || errorData.detail || 'Ma\'lumotlarni yuklashda xatolik';
+            console.error('Error response:', errorData);
+            showError(errorMessage);
+        }
     } catch (error) {
         console.error('Error loading tests:', error);
-        document.getElementById('testsList').innerHTML = `
+        showError('Server bilan bog\'lanishda xatolik: ' + error.message);
+    } finally {
+        showLoading(false);
+    }
+}
+
+function showLoading(show) {
+    const container = document.getElementById('testsList');
+    if (show) {
+        container.innerHTML = `
             <div class="col-12 text-center py-5">
-                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
-                <h4 class="text-white">Testlarni yuklashda xatolik</h4>
-                <p class="text-white-50">Sahifani qayta yuklang</p>
-                <button class="btn btn-primary mt-3" onclick="loadTests()">
-                    <i class="fas fa-redo me-2"></i>Qayta yuklash
-                </button>
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Yuklanmoqda...</span>
+                </div>
+                <p class="text-white mt-3">Testlar yuklanmoqda...</p>
             </div>
         `;
     }
 }
 
+function showError(message) {
+    const container = document.getElementById('testsList');
+    container.innerHTML = `
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+            <h4 class="text-white">Testlarni yuklashda xatolik</h4>
+            <p class="text-white-50">${message}</p>
+            <button class="btn btn-primary mt-3" onclick="loadTests()">
+                <i class="fas fa-redo me-2"></i>Qayta yuklash
+            </button>
+        </div>
+    `;
+}
+
 function displayTests(tests, userRole = 'student') {
     const container = document.getElementById('testsList');
-    const template = document.getElementById('testCardTemplate');
+    if (!container) {
+        console.error('Tests container not found');
+        return;
+    }
     
-    if (tests.length === 0) {
+    const template = document.getElementById('testCardTemplate');
+    if (!template) {
+        console.error('Test card template not found');
+        container.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                <h4 class="text-white">Xatolik</h4>
+                <p class="text-white-50">Template topilmadi</p>
+            </div>
+        `;
+        return;
+    }
+    
+    if (!tests || tests.length === 0) {
         let message = 'Hozircha testlar mavjud emas';
         if (userRole === 'teacher') {
             message = 'Siz hali test yaratmagansiz';
