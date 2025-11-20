@@ -152,12 +152,33 @@ def test_time_view(request, test_id):
 def test_list_view(request):
     """List all available tests for students or created tests for teachers"""
     if request.method == 'GET' and request.headers.get('Accept') == 'application/json':
+        from django.db import connection
+        
         if request.user.role == 'student':
             try:
-                tests = Test.objects.filter(
-                    is_active=True,
-                    grade=request.user.grade
-                ).select_related('created_by').order_by('-created_at')
+                # Raw SQL yordamida test ID'larni olish (is_paused maydonini tekshirmaslik uchun)
+                test_ids = []
+                try:
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            "SELECT id FROM tests_app_test WHERE is_active = 1 AND grade = %s ORDER BY created_at DESC",
+                            [request.user.grade]
+                        )
+                        test_ids = [row[0] for row in cursor.fetchall()]
+                except Exception as db_error:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f'Error fetching test IDs (student): {str(db_error)}')
+                    test_ids = []
+                
+                # Test obyektlarini xavfsiz yuklash
+                tests = []
+                for test_id in test_ids:
+                    try:
+                        test = Test.objects.select_related('created_by').get(id=test_id)
+                        tests.append(test)
+                    except Exception:
+                        continue
                 
                 test_data = []
                 for test in tests:
@@ -175,10 +196,10 @@ def test_list_view(request):
                             'has_attempted': attempt is not None,
                             'attempt_score': round(attempt.percentage, 1) if attempt and attempt.is_completed else None,
                             'can_attempt': (attempt is None or not attempt.is_completed) and test.is_active,
-                            'created_by': test.created_by.get_full_name() or test.created_by.username if test.created_by else 'Noma\'lum',
+                            'created_by': test.created_by.get_full_name() if test.created_by and hasattr(test.created_by, 'get_full_name') else (test.created_by.username if test.created_by else 'Noma\'lum'),
                             'created_at': test.created_at.isoformat() if test.created_at else '',
-                            'start_time': test.start_time.isoformat() if test.start_time else None,
-                            'end_time': test.end_time.isoformat() if test.end_time else None,
+                            'start_time': test.start_time.isoformat() if hasattr(test, 'start_time') and test.start_time else None,
+                            'end_time': test.end_time.isoformat() if hasattr(test, 'end_time') and test.end_time else None,
                         })
                     except Exception as e:
                         import logging
@@ -201,7 +222,30 @@ def test_list_view(request):
             
         elif request.user.role == 'teacher':
             try:
-                tests = Test.objects.filter(created_by=request.user).order_by('-created_at')
+                # Raw SQL yordamida test ID'larni olish
+                test_ids = []
+                try:
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            "SELECT id FROM tests_app_test WHERE created_by_id = %s ORDER BY created_at DESC",
+                            [request.user.id]
+                        )
+                        test_ids = [row[0] for row in cursor.fetchall()]
+                except Exception as db_error:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f'Error fetching test IDs (teacher): {str(db_error)}')
+                    test_ids = []
+                
+                # Test obyektlarini xavfsiz yuklash
+                tests = []
+                for test_id in test_ids:
+                    try:
+                        test = Test.objects.select_related('created_by').get(id=test_id)
+                        tests.append(test)
+                    except Exception:
+                        continue
+                
                 test_data = []
                 for test in tests:
                     try:
@@ -215,7 +259,7 @@ def test_list_view(request):
                             'total_questions': test.total_questions,
                             'is_active': test.is_active,
                             'created_at': test.created_at.isoformat() if test.created_at else '',
-                            'created_by': test.created_by.get_full_name() or test.created_by.username if test.created_by else 'Noma\'lum',
+                            'created_by': test.created_by.get_full_name() if test.created_by and hasattr(test.created_by, 'get_full_name') else (test.created_by.username if test.created_by else 'Noma\'lum'),
                             'attempt_count': attempt_count,
                             'max_attempts': test.max_attempts,
                             'time_limit': test.time_limit,
@@ -242,7 +286,27 @@ def test_list_view(request):
         elif request.user.role == 'admin':
             # Admin barcha testlarni ko'radi
             try:
-                tests = Test.objects.all().select_related('created_by').order_by('-created_at')
+                # Raw SQL yordamida test ID'larni olish
+                test_ids = []
+                try:
+                    with connection.cursor() as cursor:
+                        cursor.execute("SELECT id FROM tests_app_test ORDER BY created_at DESC")
+                        test_ids = [row[0] for row in cursor.fetchall()]
+                except Exception as db_error:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f'Error fetching test IDs (admin): {str(db_error)}')
+                    test_ids = []
+                
+                # Test obyektlarini xavfsiz yuklash
+                tests = []
+                for test_id in test_ids:
+                    try:
+                        test = Test.objects.select_related('created_by').get(id=test_id)
+                        tests.append(test)
+                    except Exception:
+                        continue
+                
                 test_data = []
                 for test in tests:
                     try:
@@ -256,7 +320,7 @@ def test_list_view(request):
                             'total_questions': test.total_questions,
                             'is_active': test.is_active,
                             'created_at': test.created_at.isoformat() if test.created_at else '',
-                            'created_by': test.created_by.get_full_name() or test.created_by.username if test.created_by else 'Noma\'lum',
+                            'created_by': test.created_by.get_full_name() if test.created_by and hasattr(test.created_by, 'get_full_name') else (test.created_by.username if test.created_by else 'Noma\'lum'),
                             'attempt_count': attempt_count,
                             'max_attempts': test.max_attempts,
                             'time_limit': test.time_limit,
@@ -1338,8 +1402,28 @@ def student_test_management(request):
         return redirect('accounts:dashboard')
     
     try:
-        # Barcha faol testlar
-        tests = Test.objects.filter(is_active=True)
+        # Barcha faol testlar - Raw SQL yordamida olish (is_paused maydonini tekshirmaslik uchun)
+        from django.db import connection
+        test_ids = []
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT id FROM tests_app_test WHERE is_active = 1")
+                test_ids = [row[0] for row in cursor.fetchall()]
+        except Exception as db_error:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f'Error fetching test IDs: {str(db_error)}')
+            # Agar xatolik bo'lsa, bo'sh ro'yxat qaytarish
+            test_ids = []
+        
+        # Test obyektlarini xavfsiz yuklash
+        tests = []
+        for test_id in test_ids:
+            try:
+                test = Test.objects.get(id=test_id)
+                tests.append(test)
+            except Exception:
+                continue
         
         # Barcha tasdiqlangan o'quvchilar
         students = User.objects.filter(role='student', is_verified=True)
