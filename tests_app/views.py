@@ -149,6 +149,94 @@ def test_time_view(request, test_id):
     })
 
 @login_required
+def monitor_view(request):
+    """Test monitoring sahifasi - Admin uchun barcha testlarni nazorat qilish"""
+    if request.user.role != 'admin':
+        return redirect('accounts:dashboard')
+    
+    if request.method == 'GET' and request.headers.get('Accept') == 'application/json':
+        from django.db import connection
+        
+        try:
+            # Raw SQL yordamida test ID'larni olish
+            test_ids = []
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT id FROM tests_app_test ORDER BY created_at DESC")
+                    test_ids = [row[0] for row in cursor.fetchall()]
+            except Exception as db_error:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f'Error fetching test IDs in monitor_view: {str(db_error)}')
+                test_ids = []
+            
+            # Test obyektlarini xavfsiz yuklash
+            tests = []
+            for test_id in test_ids:
+                try:
+                    test = Test.objects.select_related('created_by').get(id=test_id)
+                    tests.append(test)
+                except Exception:
+                    continue
+            
+            tests_data = []
+            for test in tests:
+                try:
+                    # Faol urinishlar (yechilayotgan testlar)
+                    active_attempts = TestAttempt.objects.filter(
+                        test=test,
+                        is_completed=False
+                    ).count()
+                    
+                    # Tugallangan urinishlar
+                    completed_attempts = TestAttempt.objects.filter(
+                        test=test,
+                        is_completed=True
+                    ).count()
+                    
+                    # Migration qo'llanmagan bo'lsa ham ishlashi uchun
+                    is_paused = getattr(test, 'is_paused', False)
+                    paused_at = None
+                    if hasattr(test, 'paused_at') and test.paused_at:
+                        paused_at = test.paused_at.isoformat()
+                    
+                    tests_data.append({
+                        'id': test.id,
+                        'title': test.title,
+                        'subject': test.subject,
+                        'grade': test.grade,
+                        'is_active': test.is_active,
+                        'is_paused': is_paused,
+                        'paused_at': paused_at,
+                        'active_attempts': active_attempts,
+                        'completed_attempts': completed_attempts,
+                        'total_questions': test.total_questions,
+                        'time_limit': test.time_limit,
+                        'created_by': test.created_by.get_full_name() if test.created_by and hasattr(test.created_by, 'get_full_name') else (test.created_by.username if test.created_by else 'Noma\'lum'),
+                        'created_at': test.created_at.isoformat() if test.created_at else '',
+                    })
+                except Exception as e:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f'Error processing test {test.id} in monitor_view: {str(e)}')
+                    continue
+            
+            return JsonResponse({
+                'tests': tests_data,
+                'total_tests': len(tests_data)
+            })
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f'Error in monitor_view: {str(e)}', exc_info=True)
+            return JsonResponse({
+                'error': 'Ma\'lumotlarni yuklashda xatolik yuz berdi',
+                'detail': str(e)
+            }, status=500)
+    
+    return render(request, 'tests_app/monitor.html')
+
+@login_required
 def test_list_view(request):
     """List all available tests for students or created tests for teachers"""
     if request.method == 'GET' and request.headers.get('Accept') == 'application/json':

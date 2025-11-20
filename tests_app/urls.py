@@ -24,4 +24,5 @@ urlpatterns = [
     path('<int:test_id>/pause/', views.pause_test, name='pause_test'),
     path('<int:test_id>/resume/', views.resume_test, name='resume_test'),
     path('<int:test_id>/time/', views.test_time_view, name='test_time'),
+    path('monitor/', views.monitor_view, name='monitor'),
 ]

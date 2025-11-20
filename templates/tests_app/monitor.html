@@ -1,0 +1,371 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Test Monitoring - Buxoro Bilimdonlar Maktabi{% endblock %}
+
+{% block content %}
+<div class="container-main">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="glass-card p-4 mb-4" data-aos="fade-down">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-white mb-1">
+                        <i class="fas fa-tv me-2"></i>
+                        Test Monitoring
+                    </h2>
+                    <p class="text-white-50 mb-0">
+                        Barcha testlarni nazorat qiling va faol urinishlarni kuzatib boring
+                    </p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" onclick="refreshData()">
+                        <i class="fas fa-sync-alt me-2"></i>
+                        Yangilash
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Section -->
+        <div id="loadingSection" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Yuklanmoqda...</span>
+            </div>
+            <p class="text-white mt-3">Ma'lumotlar yuklanmoqda...</p>
+        </div>
+
+        <!-- Error Section -->
+        <div id="errorSection" class="d-none">
+            <div class="glass-card p-4 mb-4 text-center">
+                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                <h4 class="text-white mb-2">Xatolik</h4>
+                <p class="text-white-50 mb-3" id="errorMessage">Ma'lumotlarni yuklashda xatolik yuz berdi</p>
+                <button class="btn btn-primary" onclick="loadTests()">
+                    <i class="fas fa-redo me-2"></i>
+                    Qayta yuklash
+                </button>
+            </div>
+        </div>
+
+        <!-- Tests Grid -->
+        <div id="testsContainer" class="row g-4 d-none">
+            <!-- Tests will be loaded here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="d-none text-center py-5">
+            <div class="glass-card p-5">
+                <i class="fas fa-inbox fa-4x text-white-50 mb-3"></i>
+                <h4 class="text-white mb-2">Testlar topilmadi</h4>
+                <p class="text-white-50">Hozircha hech qanday test mavjud emas</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .test-card-monitor {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .test-card-monitor:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        border-color: rgba(102, 126, 234, 0.5);
+    }
+
+    .test-status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background: rgba(76, 175, 80, 0.2);
+        color: #4CAF50;
+        border: 1px solid rgba(76, 175, 80, 0.3);
+    }
+
+    .status-paused {
+        background: rgba(255, 152, 0, 0.2);
+        color: #FF9800;
+        border: 1px solid rgba(255, 152, 0, 0.3);
+    }
+
+    .status-inactive {
+        background: rgba(158, 158, 158, 0.2);
+        color: #9E9E9E;
+        border: 1px solid rgba(158, 158, 158, 0.3);
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .stat-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.875rem;
+    }
+
+    .stat-icon.active {
+        background: rgba(76, 175, 80, 0.2);
+        color: #4CAF50;
+    }
+
+    .stat-icon.completed {
+        background: rgba(102, 126, 234, 0.2);
+        color: #667eea;
+    }
+
+    .monitor-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .monitor-actions .btn {
+        flex: 1;
+        min-width: 120px;
+    }
+</style>
+
+<script>
+    let refreshInterval;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadTests();
+        // Har 10 soniyada bir yangilash
+        refreshInterval = setInterval(loadTests, 10000);
+    });
+
+    function loadTests() {
+        document.getElementById('loadingSection').classList.remove('d-none');
+        document.getElementById('errorSection').classList.add('d-none');
+        document.getElementById('testsContainer').classList.add('d-none');
+        document.getElementById('emptyState').classList.add('d-none');
+
+        fetch('{% url "tests:monitor" %}', {
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('loadingSection').classList.add('d-none');
+            
+            if (data.error) {
+                showError(data.error);
+                return;
+            }
+
+            if (data.tests && data.tests.length > 0) {
+                displayTests(data.tests);
+            } else {
+                document.getElementById('emptyState').classList.remove('d-none');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading tests:', error);
+            document.getElementById('loadingSection').classList.add('d-none');
+            showError('Ma\'lumotlarni yuklashda xatolik yuz berdi');
+        });
+    }
+
+    function displayTests(tests) {
+        const container = document.getElementById('testsContainer');
+        container.innerHTML = '';
+
+        tests.forEach(test => {
+            const testCard = createTestCard(test);
+            container.appendChild(testCard);
+        });
+
+        container.classList.remove('d-none');
+    }
+
+    function createTestCard(test) {
+        const col = document.createElement('div');
+        col.className = 'col-md-6 col-lg-4';
+        
+        const statusClass = test.is_paused ? 'status-paused' : (test.is_active ? 'status-active' : 'status-inactive');
+        const statusText = test.is_paused ? 'Pauza' : (test.is_active ? 'Faol' : 'Nofaol');
+        
+        col.innerHTML = `
+            <div class="test-card-monitor" data-aos="fade-up">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="flex-grow-1">
+                        <h5 class="text-white mb-1">${escapeHtml(test.title)}</h5>
+                        <p class="text-white-50 mb-0 small">${escapeHtml(test.subject)} • ${test.grade}-sinf</p>
+                    </div>
+                    <span class="test-status-badge ${statusClass}">${statusText}</span>
+                </div>
+
+                <div class="stat-item">
+                    <div class="stat-icon active">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="text-white small">Faol urinishlar</div>
+                        <div class="text-white fw-bold">${test.active_attempts}</div>
+                    </div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="stat-icon completed">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="text-white small">Tugallangan</div>
+                        <div class="text-white fw-bold">${test.completed_attempts}</div>
+                    </div>
+                </div>
+
+                <div class="text-white-50 small mb-3">
+                    <i class="fas fa-question-circle me-1"></i>${test.total_questions} savol
+                    <span class="ms-3">
+                        <i class="fas fa-clock me-1"></i>${test.time_limit} daqiqa
+                    </span>
+                </div>
+
+                <div class="monitor-actions">
+                    <a href="{% url 'tests:test_control' 0 %}" class="btn btn-sm btn-primary" onclick="event.preventDefault(); window.location.href = '{% url 'tests:test_control' 0 %}'.replace('0', '${test.id}');">
+                        <i class="fas fa-eye me-1"></i>Nazorat
+                    </a>
+                    ${test.is_active ? `
+                        ${test.is_paused ? `
+                            <button class="btn btn-sm btn-success" onclick="resumeTest(${test.id})">
+                                <i class="fas fa-play me-1"></i>Davom ettirish
+                            </button>
+                        ` : `
+                            <button class="btn btn-sm btn-warning" onclick="pauseTest(${test.id})">
+                                <i class="fas fa-pause me-1"></i>Pauza
+                            </button>
+                        `}
+                    ` : ''}
+                </div>
+            </div>
+        `;
+        
+        return col;
+    }
+
+    function pauseTest(testId) {
+        if (!confirm('Testni pauza qilmoqchimisiz?')) return;
+
+        fetch(`/tests/${testId}/pause/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showSuccess('Test pauza qilindi');
+                loadTests();
+            } else {
+                showError(data.error || 'Xatolik yuz berdi');
+            }
+        })
+        .catch(error => {
+            console.error('Error pausing test:', error);
+            showError('Xatolik yuz berdi');
+        });
+    }
+
+    function resumeTest(testId) {
+        if (!confirm('Testni davom ettirmoqchimisiz?')) return;
+
+        fetch(`/tests/${testId}/resume/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showSuccess('Test davom ettirildi');
+                loadTests();
+            } else {
+                showError(data.error || 'Xatolik yuz berdi');
+            }
+        })
+        .catch(error => {
+            console.error('Error resuming test:', error);
+            showError('Xatolik yuz berdi');
+        });
+    }
+
+    function refreshData() {
+        loadTests();
+    }
+
+    function showError(message) {
+        document.getElementById('errorMessage').textContent = message;
+        document.getElementById('errorSection').classList.remove('d-none');
+    }
+
+    function showSuccess(message) {
+        // Simple success notification
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+        alert.style.zIndex = '9999';
+        alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alert);
+        setTimeout(() => alert.remove(), 3000);
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Cleanup interval on page unload
+    window.addEventListener('beforeunload', function() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+        }
+    });
+</script>
+{% endblock %}
+
