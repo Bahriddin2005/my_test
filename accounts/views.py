@@ -369,13 +369,24 @@ def analytics_view(request):
     from django.db.models import Count, Avg, Q, Sum
     from django.utils import timezone
     from datetime import timedelta
+    from django.db import connection
     
-    # Umumiy statistika
-    total_students = User.objects.filter(role='student', is_verified=True).count()
-    total_teachers = User.objects.filter(role='teacher', is_verified=True).count()
-    total_tests = Test.objects.count()
-    total_questions = Question.objects.count()
-    total_attempts = TestAttempt.objects.filter(is_completed=True).count()
+    try:
+        # Umumiy statistika
+        total_students = User.objects.filter(role='student', is_verified=True).count()
+        total_teachers = User.objects.filter(role='teacher', is_verified=True).count()
+        total_tests = Test.objects.count()
+        total_questions = Question.objects.count()
+        total_attempts = TestAttempt.objects.filter(is_completed=True).count()
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f'Error in analytics_view (initial stats): {str(e)}', exc_info=True)
+        # Migration qo'llanmagan bo'lsa, xatolikni qaytarish
+        return JsonResponse({
+            'error': 'Ma\'lumotlarni yuklashda xatolik yuz berdi. Migration\'ni ishga tushiring: python manage.py migrate tests_app',
+            'detail': str(e)
+        }, status=500)
     
     # Test natijalari statistikasi
     completed_attempts = TestAttempt.objects.filter(is_completed=True)
@@ -390,54 +401,66 @@ def analytics_view(request):
     
     # Sinf bo'yicha statistika
     grade_stats = []
-    for grade in range(5, 12):
-        students_count = User.objects.filter(role='student', grade=grade, is_verified=True).count()
-        tests_count = Test.objects.filter(grade=grade).count()
-        attempts_count = TestAttempt.objects.filter(
-            is_completed=True,
-            student__grade=grade
-        ).count()
-        
-        if attempts_count > 0:
-            grade_avg = TestAttempt.objects.filter(
+    try:
+        for grade in range(5, 12):
+            students_count = User.objects.filter(role='student', grade=grade, is_verified=True).count()
+            tests_count = Test.objects.filter(grade=grade).count()
+            attempts_count = TestAttempt.objects.filter(
                 is_completed=True,
                 student__grade=grade
-            ).aggregate(avg=Avg('percentage'))['avg'] or 0
-        else:
-            grade_avg = 0
-        
-        grade_stats.append({
-            'grade': grade,
-            'students': students_count,
-            'tests': tests_count,
-            'attempts': attempts_count,
-            'avg_score': round(grade_avg, 1)
-        })
+            ).count()
+            
+            if attempts_count > 0:
+                grade_avg = TestAttempt.objects.filter(
+                    is_completed=True,
+                    student__grade=grade
+                ).aggregate(avg=Avg('percentage'))['avg'] or 0
+            else:
+                grade_avg = 0
+            
+            grade_stats.append({
+                'grade': grade,
+                'students': students_count,
+                'tests': tests_count,
+                'attempts': attempts_count,
+                'avg_score': round(grade_avg, 1)
+            })
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f'Error in analytics_view (grade_stats): {str(e)}', exc_info=True)
+        grade_stats = []
     
     # Fan bo'yicha statistika
     subject_stats = []
-    subjects = Test.objects.values_list('subject', flat=True).distinct()
-    for subject in subjects:
-        tests_count = Test.objects.filter(subject=subject).count()
-        attempts_count = TestAttempt.objects.filter(
-            is_completed=True,
-            test__subject=subject
-        ).count()
-        
-        if attempts_count > 0:
-            subject_avg = TestAttempt.objects.filter(
+    try:
+        subjects = Test.objects.values_list('subject', flat=True).distinct()
+        for subject in subjects:
+            tests_count = Test.objects.filter(subject=subject).count()
+            attempts_count = TestAttempt.objects.filter(
                 is_completed=True,
                 test__subject=subject
-            ).aggregate(avg=Avg('percentage'))['avg'] or 0
-        else:
-            subject_avg = 0
-        
-        subject_stats.append({
-            'subject': subject,
-            'tests': tests_count,
-            'attempts': attempts_count,
-            'avg_score': round(subject_avg, 1)
-        })
+            ).count()
+            
+            if attempts_count > 0:
+                subject_avg = TestAttempt.objects.filter(
+                    is_completed=True,
+                    test__subject=subject
+                ).aggregate(avg=Avg('percentage'))['avg'] or 0
+            else:
+                subject_avg = 0
+            
+            subject_stats.append({
+                'subject': subject,
+                'tests': tests_count,
+                'attempts': attempts_count,
+                'avg_score': round(subject_avg, 1)
+            })
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f'Error in analytics_view (subject_stats): {str(e)}', exc_info=True)
+        subject_stats = []
     
     # Eng faol o'quvchilar (top 10)
     top_students = User.objects.filter(
@@ -466,26 +489,38 @@ def analytics_view(request):
         })
     
     # Eng muvaffaqiyatli testlar (top 10)
-    top_tests = Test.objects.annotate(
-        attempts_count=Count('attempts', filter=Q(attempts__is_completed=True))
-    ).filter(attempts_count__gt=0).order_by('-attempts_count')[:10]
-    
     top_tests_data = []
-    for test in top_tests:
-        test_attempts = TestAttempt.objects.filter(test=test, is_completed=True)
-        if test_attempts.exists():
-            test_avg = test_attempts.aggregate(avg=Avg('percentage'))['avg'] or 0
-        else:
-            test_avg = 0
+    try:
+        top_tests = Test.objects.annotate(
+            attempts_count=Count('attempts', filter=Q(attempts__is_completed=True))
+        ).filter(attempts_count__gt=0).order_by('-attempts_count')[:10]
         
-        top_tests_data.append({
-            'title': test.title,
-            'subject': test.subject,
-            'grade': test.grade,
-            'attempts': test.attempts_count,
-            'avg_score': round(test_avg, 1),
-            'total_questions': test.total_questions
-        })
+        for test in top_tests:
+            try:
+                test_attempts = TestAttempt.objects.filter(test=test, is_completed=True)
+                if test_attempts.exists():
+                    test_avg = test_attempts.aggregate(avg=Avg('percentage'))['avg'] or 0
+                else:
+                    test_avg = 0
+                
+                top_tests_data.append({
+                    'title': test.title,
+                    'subject': test.subject,
+                    'grade': test.grade,
+                    'attempts': test.attempts_count,
+                    'avg_score': round(test_avg, 1),
+                    'total_questions': test.total_questions
+                })
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f'Error processing test {test.id}: {str(e)}')
+                continue
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f'Error in analytics_view (top_tests): {str(e)}', exc_info=True)
+        top_tests_data = []
     
     # Vaqt bo'yicha statistika (oxirgi 30 kun)
     date_stats = []

@@ -1258,47 +1258,65 @@ def student_test_management(request):
     if request.user.role != 'admin':
         return redirect('accounts:dashboard')
     
-    # Barcha faol testlar
-    tests = Test.objects.filter(is_active=True)
-    
-    # Barcha tasdiqlangan o'quvchilar
-    students = User.objects.filter(role='student', is_verified=True)
-    
-    # Har bir o'quvchi va test uchun urinishlar ma'lumotlari
-    student_test_data = []
-    
-    for student in students:
-        student_tests = []
-        for test in tests:
-            attempts = TestAttempt.objects.filter(student=student, test=test)
-            latest_attempt = attempts.order_by('-started_at').first()
-            
-            # Qayta ishlash so'rovlari
-            retake_requests = TestRetakeRequest.objects.filter(
-                student=student,
-                test=test
-            ).order_by('-created_at')
-            
-            test_info = {
-                'test': test,
-                'attempts_count': attempts.count(),
-                'latest_attempt': latest_attempt,
-                'can_retake': latest_attempt is not None,
-                'retake_requests': retake_requests
-            }
-            student_tests.append(test_info)
+    try:
+        # Barcha faol testlar
+        tests = Test.objects.filter(is_active=True)
         
-        student_test_data.append({
-            'student': student,
-            'tests': student_tests
-        })
-    
-    context = {
-        'student_test_data': student_test_data,
-        'all_tests': tests
-    }
-    
-    return render(request, 'tests_app/student_test_management.html', context)
+        # Barcha tasdiqlangan o'quvchilar
+        students = User.objects.filter(role='student', is_verified=True)
+        
+        # Har bir o'quvchi va test uchun urinishlar ma'lumotlari
+        student_test_data = []
+        
+        for student in students:
+            student_tests = []
+            for test in tests:
+                try:
+                    attempts = TestAttempt.objects.filter(student=student, test=test)
+                    latest_attempt = attempts.order_by('-started_at').first()
+                    
+                    # Qayta ishlash so'rovlari
+                    retake_requests = TestRetakeRequest.objects.filter(
+                        student=student,
+                        test=test
+                    ).order_by('-created_at')
+                    
+                    test_info = {
+                        'test': test,
+                        'attempts_count': attempts.count(),
+                        'latest_attempt': latest_attempt,
+                        'can_retake': latest_attempt is not None,
+                        'retake_requests': retake_requests
+                    }
+                    student_tests.append(test_info)
+                except Exception as e:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f'Error processing test {test.id} for student {student.id}: {str(e)}')
+                    continue
+            
+            student_test_data.append({
+                'student': student,
+                'tests': student_tests
+            })
+        
+        context = {
+            'student_test_data': student_test_data,
+            'all_tests': tests
+        }
+        
+        return render(request, 'tests_app/student_test_management.html', context)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f'Error in student_test_management: {str(e)}', exc_info=True)
+        from django.http import HttpResponse
+        return HttpResponse(
+            f'<html><body><h1>Xatolik</h1><p>Ma\'lumotlarni yuklashda xatolik yuz berdi.</p>'
+            f'<p>Migration\'ni ishga tushiring: <code>python manage.py migrate tests_app</code></p>'
+            f'<p>Xatolik: {str(e)}</p></body></html>',
+            status=500
+        )
 
 @login_required
 def edit_test_view(request, test_id):
