@@ -19,17 +19,30 @@ def pause_test(request, test_id):
     if request.user.role != 'admin':
         return JsonResponse({'error': 'Access denied'}, status=403)
     
-    test = get_object_or_404(Test, id=test_id)
-    test.is_paused = True
-    test.paused_at = timezone.now()
-    test.save()
-    
-    return JsonResponse({
-        'success': True,
-        'message': 'Test pauza qilindi',
-        'is_paused': True,
-        'paused_at': test.paused_at.isoformat()
-    })
+    try:
+        test = get_object_or_404(Test, id=test_id)
+        # Migration qo'llanmagan bo'lsa ham ishlashi uchun
+        if hasattr(test, 'is_paused'):
+            test.is_paused = True
+            if hasattr(test, 'paused_at'):
+                test.paused_at = timezone.now()
+            test.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Test pauza qilindi',
+                'is_paused': True,
+                'paused_at': test.paused_at.isoformat() if hasattr(test, 'paused_at') and test.paused_at else None
+            })
+        else:
+            return JsonResponse({
+                'error': 'Migration qo\'llanmagan. Migrationni ishga tushiring: python manage.py migrate tests_app'
+            }, status=500)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f'Error in pause_test: {str(e)}', exc_info=True)
+        return JsonResponse({'error': str(e)}, status=500)
 
 @login_required
 @require_http_methods(["POST"])
@@ -38,16 +51,29 @@ def resume_test(request, test_id):
     if request.user.role != 'admin':
         return JsonResponse({'error': 'Access denied'}, status=403)
     
-    test = get_object_or_404(Test, id=test_id)
-    test.is_paused = False
-    test.paused_at = None
-    test.save()
-    
-    return JsonResponse({
-        'success': True,
-        'message': 'Test davom ettirildi',
-        'is_paused': False
-    })
+    try:
+        test = get_object_or_404(Test, id=test_id)
+        # Migration qo'llanmagan bo'lsa ham ishlashi uchun
+        if hasattr(test, 'is_paused'):
+            test.is_paused = False
+            if hasattr(test, 'paused_at'):
+                test.paused_at = None
+            test.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Test davom ettirildi',
+                'is_paused': False
+            })
+        else:
+            return JsonResponse({
+                'error': 'Migration qo\'llanmagan. Migrationni ishga tushiring: python manage.py migrate tests_app'
+            }, status=500)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f'Error in resume_test: {str(e)}', exc_info=True)
+        return JsonResponse({'error': str(e)}, status=500)
 
 @login_required
 def test_control_view(request, test_id):
@@ -83,12 +109,18 @@ def test_control_view(request, test_id):
     }
     
     if request.headers.get('Accept') == 'application/json':
+        # Migration qo'llanmagan bo'lsa ham ishlashi uchun
+        is_paused = getattr(test, 'is_paused', False)
+        paused_at = None
+        if hasattr(test, 'paused_at') and test.paused_at:
+            paused_at = test.paused_at.isoformat()
+        
         return JsonResponse({
             'test': {
                 'id': test.id,
                 'title': test.title,
-                'is_paused': test.is_paused,
-                'paused_at': test.paused_at.isoformat() if test.paused_at else None,
+                'is_paused': is_paused,
+                'paused_at': paused_at,
                 'is_active': test.is_active
             },
             'active_attempts': attempts_data,
@@ -107,10 +139,13 @@ def test_time_view(request, test_id):
         if test.grade != request.user.grade:
             return JsonResponse({'error': 'Access denied'}, status=403)
     
+    # Migration qo'llanmagan bo'lsa ham ishlashi uchun
+    is_paused = getattr(test, 'is_paused', False)
+    
     return JsonResponse({
         'server_time': timezone.now().isoformat(),
         'test_id': test.id,
-        'is_paused': test.is_paused
+        'is_paused': is_paused
     })
 
 @login_required
@@ -412,7 +447,9 @@ def take_test_view(request, test_id):
     if test.end_time and now > test.end_time:
         return JsonResponse({'error': 'Test has ended'}, status=403)
     
-    if test.is_paused:
+    # Migration qo'llanmagan bo'lsa ham ishlashi uchun
+    is_paused = getattr(test, 'is_paused', False)
+    if is_paused:
         return JsonResponse({'error': 'Test hozir pauza qilingan. Iltimos, kuting...'}, status=403)
     
     if request.method == 'POST':
@@ -877,8 +914,8 @@ def test_info_view(request, test_id):
         'created_by': test.created_by.get_full_name() or test.created_by.username,
         'created_at': test.created_at.isoformat(),
         'start_time': test.start_time.isoformat() if test.start_time else None,
-        'is_paused': test.is_paused,
-        'paused_at': test.paused_at.isoformat() if test.paused_at else None,
+        'is_paused': getattr(test, 'is_paused', False),
+        'paused_at': test.paused_at.isoformat() if hasattr(test, 'paused_at') and test.paused_at else None,
         'end_time': test.end_time.isoformat() if test.end_time else None,
     })
 
@@ -1096,16 +1133,54 @@ def retake_requests_view(request):
             # JSON API so'rovi
             status_filter = request.GET.get('status', 'all')
             
-            requests_qs = TestRetakeRequest.objects.select_related(
-                'student', 'test', 'previous_attempt', 'approved_by'
-            ).order_by('-created_at')
-            
-            # O'qituvchi uchun faqat o'z testlari so'rovlari
-            if request.user.role == 'teacher':
-                requests_qs = requests_qs.filter(test__created_by=request.user)
-            
-            if status_filter != 'all':
-                requests_qs = requests_qs.filter(status=status_filter)
+            # Test modelini yuklashda xatolik bo'lmasligi uchun xavfsir so'rov
+            # Raw SQL yoki values() ishlatish orqali Test modelini to'liq yuklamaslik
+            try:
+                # Avval TestRetakeRequest'larni olish, keyin test ma'lumotlarini alohida olish
+                requests_qs = TestRetakeRequest.objects.select_related(
+                    'student', 'previous_attempt', 'approved_by'
+                ).order_by('-created_at')
+                
+                # O'qituvchi uchun faqat o'z testlari so'rovlari
+                # test__created_by filtri Test modelini yuklaydi, shuning uchun xavfsiz qilamiz
+                if request.user.role == 'teacher':
+                    try:
+                        # Raw SQL yordamida test ID'larni olish (Test modelini to'liq yuklamaslik)
+                        from django.db import connection
+                        with connection.cursor() as cursor:
+                            cursor.execute(
+                                "SELECT id FROM tests_app_test WHERE created_by_id = %s",
+                                [request.user.id]
+                            )
+                            teacher_test_ids = [row[0] for row in cursor.fetchall()]
+                        
+                        if teacher_test_ids:
+                            requests_qs = requests_qs.filter(test_id__in=teacher_test_ids)
+                        else:
+                            # O'qituvchining testlari yo'q
+                            requests_qs = requests_qs.none()
+                    except Exception as filter_error:
+                        # Agar Test modelini yuklashda xatolik bo'lsa, bo'sh ro'yxat qaytarish
+                        import logging
+                        logger = logging.getLogger(__name__)
+                        logger.error(f'Error filtering teacher tests: {str(filter_error)}')
+                        return JsonResponse({
+                            'requests': [],
+                            'total_count': 0
+                        })
+                
+                if status_filter != 'all':
+                    requests_qs = requests_qs.filter(status=status_filter)
+            except Exception as db_error:
+                # Database xatolik - migration qo'llanmagan bo'lishi mumkin
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f'Database error in retake_requests_view: {str(db_error)}', exc_info=True)
+                # Bo'sh ro'yxat qaytarish
+                return JsonResponse({
+                    'requests': [],
+                    'total_count': 0
+                })
             
             requests_data = []
             for req in requests_qs:
@@ -1117,14 +1192,18 @@ def retake_requests_view(request):
                         previous_score = req.previous_attempt.score or 0
                         previous_percentage = req.previous_attempt.percentage or 0
                     
+                    # Test ma'lumotlarini xavfsiz olish
+                    test_title = req.test.title if req.test else 'Noma\'lum test'
+                    test_subject = req.test.subject if req.test else '-'
+                    
                     requests_data.append({
                         'id': req.id,
-                        'student_name': req.student.get_full_name() or req.student.username,
-                        'student_username': req.student.username,
-                        'student_grade': req.student.grade or '-',
-                        'student_class': req.student.class_name or '-',
-                        'test_title': req.test.title,
-                        'test_subject': req.test.subject,
+                        'student_name': req.student.get_full_name() or req.student.username if req.student else 'Noma\'lum',
+                        'student_username': req.student.username if req.student else '-',
+                        'student_grade': req.student.grade or '-' if req.student else '-',
+                        'student_class': req.student.class_name or '-' if req.student else '-',
+                        'test_title': test_title,
+                        'test_subject': test_subject,
                         'previous_score': previous_score,
                         'previous_percentage': previous_percentage,
                         'reason': req.reason or '',
@@ -1313,7 +1392,7 @@ def student_test_management(request):
         from django.http import HttpResponse
         return HttpResponse(
             f'<html><body><h1>Xatolik</h1><p>Ma\'lumotlarni yuklashda xatolik yuz berdi.</p>'
-            f'<p>Migration\'ni ishga tushiring: <code>python manage.py migrate tests_app</code></p>'
+            f'<p>Migrationni ishga tushiring: <code>python manage.py migrate tests_app</code></p>'
             f'<p>Xatolik: {str(e)}</p></body></html>',
             status=500
         )
