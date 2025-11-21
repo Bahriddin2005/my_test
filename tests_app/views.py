@@ -247,12 +247,21 @@ def test_list_view(request):
                 # Raw SQL yordamida test ID'larni olish (is_paused maydonini tekshirmaslik uchun)
                 test_ids = []
                 try:
-                    with connection.cursor() as cursor:
-                        cursor.execute(
-                            "SELECT id FROM tests_app_test WHERE is_active = 1 AND grade = %s ORDER BY created_at DESC",
-                            [request.user.grade]
-                        )
-                        test_ids = [row[0] for row in cursor.fetchall()]
+                    # Student'ning grade maydonini tekshirish
+                    student_grade = getattr(request.user, 'grade', None)
+                    if student_grade is None:
+                        # Agar grade None bo'lsa, barcha testlarni ko'rsatish yoki bo'sh ro'yxat qaytarish
+                        import logging
+                        logger = logging.getLogger(__name__)
+                        logger.warning(f'Student {request.user.username} has no grade set')
+                        test_ids = []
+                    else:
+                        with connection.cursor() as cursor:
+                            cursor.execute(
+                                "SELECT id FROM tests_app_test WHERE is_active = 1 AND grade = %s ORDER BY created_at DESC",
+                                [student_grade]
+                            )
+                            test_ids = [row[0] for row in cursor.fetchall()]
                 except Exception as db_error:
                     import logging
                     logger = logging.getLogger(__name__)
@@ -294,6 +303,10 @@ def test_list_view(request):
                         logger = logging.getLogger(__name__)
                         logger.error(f'Error processing test {test.id}: {str(e)}')
                         continue
+                
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.info(f'Student test_list_view: Found {len(test_data)} tests for grade {student_grade}')
                 
                 return JsonResponse({
                     'tests': test_data,
@@ -418,6 +431,10 @@ def test_list_view(request):
                         logger = logging.getLogger(__name__)
                         logger.error(f'Error processing test {test.id}: {str(e)}')
                         continue
+                
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.info(f'Admin test_list_view: Found {len(test_data)} tests')
                 
                 return JsonResponse({
                     'tests': test_data,
