@@ -42,6 +42,19 @@
                         TESTLARNI KO'RISH
                     </a>
                     {% elif user.role == 'teacher' %}
+                    <a href="{% url 'tests:create_test' %}" class="hero-btn-secondary-modern">
+                        <i class="fas fa-plus-circle"></i>
+                        TEST YARATISH
+                    </a>
+                    <a href="{% url 'tests:tests' %}" class="hero-btn-secondary-modern">
+                        <i class="fas fa-list"></i>
+                        TESTLARNI KO'RISH
+                    </a>
+                    {% elif user.role == 'admin' %}
+                    <a href="{% url 'tests:create_test' %}" class="hero-btn-secondary-modern">
+                        <i class="fas fa-plus-circle"></i>
+                        TEST YARATISH
+                    </a>
                     <a href="{% url 'tests:tests' %}" class="hero-btn-secondary-modern">
                         <i class="fas fa-list"></i>
                         TESTLARNI KO'RISH
