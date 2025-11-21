@@ -487,9 +487,20 @@ function displayTests(tests, userRole = 'student') {
         container.appendChild(clone);
     });
     
+    console.log(`Successfully displayed ${tests.length} tests`); // Debug log
+    
     // Reinitialize AOS for new elements
     if (typeof AOS !== 'undefined') {
         AOS.refresh();
+    }
+    
+    // Apply filters after displaying tests (only if filters are set)
+    const hasActiveFilters = document.getElementById('searchInput')?.value || 
+                            document.getElementById('subjectFilter')?.value || 
+                            document.getElementById('gradeFilter')?.value || 
+                            document.getElementById('statusFilter')?.value;
+    if (hasActiveFilters) {
+        filterTests();
     }
 }
 
@@ -532,8 +543,10 @@ function filterTests() {
         const gradeMatch = gradeText.match(/(\d+)-sinf/);
         const grade = gradeMatch ? gradeMatch[1] : '';
         
-        const isCompleted = !item.querySelector('.completed-badge').classList.contains('d-none');
-        const isInProgress = !item.querySelector('.continue-test-btn').classList.contains('d-none');
+        const completedBadge = item.querySelector('.completed-badge');
+        const continueBtn = item.querySelector('.continue-test-btn');
+        const isCompleted = completedBadge && !completedBadge.classList.contains('d-none');
+        const isInProgress = continueBtn && !continueBtn.classList.contains('d-none');
         
         // Admin uchun holat filtri
         const inactiveBadge = item.querySelector('.badge.bg-danger');
