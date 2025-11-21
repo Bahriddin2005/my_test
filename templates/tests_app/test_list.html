@@ -109,6 +109,9 @@
                 <div class="col-md-2">
                     <select class="form-select bg-transparent border-secondary text-white" id="gradeFilter">
                         <option value="">Barcha sinflar</option>
+                        <option value="1">1-sinf</option>
+                        <option value="2">2-sinf</option>
+                        <option value="3">3-sinf</option>
                         <option value="4">4-sinf</option>
                         <option value="5">5-sinf</option>
                         <option value="6">6-sinf</option>
@@ -275,7 +278,15 @@ async function loadTests() {
             currentUserRole = data.user_role || currentUserRole;
             console.log('User role:', currentUserRole); // Debug log
             console.log('Tests count:', data.tests ? data.tests.length : 0); // Debug log
-            displayTests(data.tests || [], currentUserRole);
+            
+            // Testlar mavjudligini tekshirish
+            if (data.tests && Array.isArray(data.tests) && data.tests.length > 0) {
+                console.log('Displaying', data.tests.length, 'tests'); // Debug log
+                displayTests(data.tests, currentUserRole);
+            } else {
+                console.log('No tests to display'); // Debug log
+                displayTests([], currentUserRole);
+            }
         } else {
             const errorData = await response.json().catch(() => ({}));
             const errorMessage = errorData.error || errorData.detail || 'Ma\'lumotlarni yuklashda xatolik';
@@ -368,17 +379,34 @@ function displayTests(tests, userRole = 'student') {
     container.innerHTML = '';
     
     tests.forEach((test, index) => {
-        const clone = template.content.cloneNode(true);
-        
-        // Fill test data
-        clone.querySelector('.subject-badge').textContent = test.subject;
-        clone.querySelector('.grade-badge').textContent = test.grade + '-sinf';
-        clone.querySelector('.test-title').textContent = test.title;
-        clone.querySelector('.test-description').textContent = test.description || 'Test tavsifi mavjud emas';
-        clone.querySelector('.questions-count').textContent = test.total_questions + ' savol';
-        clone.querySelector('.time-limit').textContent = test.time_limit + ' daq';
-        clone.querySelector('.teacher-name').textContent = test.created_by || 'Noma\'lum';
-        clone.querySelector('.created-date').textContent = formatDate(test.created_at);
+        try {
+            const clone = template.content.cloneNode(true);
+            
+            // Fill test data
+            if (clone.querySelector('.subject-badge')) {
+                clone.querySelector('.subject-badge').textContent = test.subject || 'Noma\'lum';
+            }
+            if (clone.querySelector('.grade-badge')) {
+                clone.querySelector('.grade-badge').textContent = (test.grade || 0) + '-sinf';
+            }
+            if (clone.querySelector('.test-title')) {
+                clone.querySelector('.test-title').textContent = test.title || 'Noma\'lum test';
+            }
+            if (clone.querySelector('.test-description')) {
+                clone.querySelector('.test-description').textContent = test.description || 'Test tavsifi mavjud emas';
+            }
+            if (clone.querySelector('.questions-count')) {
+                clone.querySelector('.questions-count').textContent = (test.total_questions || 0) + ' savol';
+            }
+            if (clone.querySelector('.time-limit')) {
+                clone.querySelector('.time-limit').textContent = (test.time_limit || 0) + ' daq';
+            }
+            if (clone.querySelector('.teacher-name')) {
+                clone.querySelector('.teacher-name').textContent = test.created_by || 'Noma\'lum';
+            }
+            if (clone.querySelector('.created-date')) {
+                clone.querySelector('.created-date').textContent = formatDate(test.created_at);
+            }
         
         // Set test ID
         clone.querySelector('.test-card').setAttribute('data-test-id', test.id);
@@ -481,10 +509,16 @@ function displayTests(tests, userRole = 'student') {
             }
         }
         
-        // Add animation delay
-        clone.querySelector('.test-item').setAttribute('data-aos-delay', (index * 100).toString());
-        
-        container.appendChild(clone);
+            // Add animation delay
+            if (clone.querySelector('.test-item')) {
+                clone.querySelector('.test-item').setAttribute('data-aos-delay', (index * 100).toString());
+            }
+            
+            container.appendChild(clone);
+        } catch (error) {
+            console.error(`Error displaying test ${index}:`, error);
+            console.error('Test data:', test);
+        }
     });
     
     console.log(`Successfully displayed ${tests.length} tests`); // Debug log
@@ -494,14 +528,8 @@ function displayTests(tests, userRole = 'student') {
         AOS.refresh();
     }
     
-    // Apply filters after displaying tests (only if filters are set)
-    const hasActiveFilters = document.getElementById('searchInput')?.value || 
-                            document.getElementById('subjectFilter')?.value || 
-                            document.getElementById('gradeFilter')?.value || 
-                            document.getElementById('statusFilter')?.value;
-    if (hasActiveFilters) {
-        filterTests();
-    }
+    // Filterlarni qo'llash faqat foydalanuvchi filterlarni o'zgartirganda
+    // Bu yerda avtomatik filter qo'llanmaydi, chunki barcha testlar ko'rsatilishi kerak
 }
 
 function startTest(button) {
