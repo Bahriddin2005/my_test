@@ -126,6 +126,7 @@ def logout_view(request):
 @login_required
 def dashboard_view(request):
     from tests_app.models import TestResult, TestAttempt, Test
+    from django.db import connection
     
     context = {
         'user': request.user,
@@ -137,7 +138,17 @@ def dashboard_view(request):
         context['verification_requests_count'] = VerificationRequest.objects.filter(is_approved=None).count()
         context['total_students'] = User.objects.filter(role='student').count()
         context['total_teachers'] = User.objects.filter(role='teacher').count()
-        context['total_tests'] = Test.objects.count()
+        
+        # Test sonini xavfsiz olish (is_paused maydonini tekshirmaslik uchun)
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT COUNT(*) FROM tests_app_test")
+                context['total_tests'] = cursor.fetchone()[0]
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f'Error fetching test count in dashboard_view: {str(e)}')
+            context['total_tests'] = 0
     elif request.user.role == 'student':
         # O'quvchi uchun natijalarni olish
         test_results = TestResult.objects.filter(
