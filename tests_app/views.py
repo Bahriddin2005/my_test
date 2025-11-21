@@ -1059,19 +1059,49 @@ def create_test_view(request):
                 }, status=400)
             
             with transaction.atomic():
+                # Test yaratish - is_paused maydonini xavfsiz qo'shish
+                # Asosiy maydonlar
+                test_kwargs = {
+                    'title': title,
+                    'description': request.POST.get('description', '').strip(),
+                    'subject': subject,
+                    'grade': int(grade),
+                    'time_limit': int(time_limit),
+                    'max_attempts': int(request.POST.get('max_attempts', 1)),
+                    'show_results': request.POST.get('show_results') == 'on' or request.POST.get('show_results') == 'true',
+                    'is_active': request.POST.get('is_active') == 'on' or request.POST.get('is_active') == 'true',
+                    'shuffle_questions': request.POST.get('shuffle_questions') == 'on' or request.POST.get('shuffle_questions') == 'true',
+                    'created_by': request.user
+                }
+                
+                # is_paused va paused_at maydonlarini xavfsiz qo'shish
+                # Agar maydonlar mavjud bo'lmasa, ularni qo'shmasdan yaratish
+                try:
+                    # Avval model maydonlarini tekshirish
+                    from django.db import models
+                    test_fields = [f.name for f in Test._meta.get_fields() if isinstance(f, models.Field)]
+                    if 'is_paused' in test_fields:
+                        test_kwargs['is_paused'] = False
+                    if 'paused_at' in test_fields:
+                        test_kwargs['paused_at'] = None
+                except:
+                    # Agar maydonlarni tekshirib bo'lmasa, ularni qo'shmasdan davom etish
+                    pass
+                
                 # Test yaratish
-                test = Test.objects.create(
-                    title=title,
-                    description=request.POST.get('description', '').strip(),
-                    subject=subject,
-                    grade=int(grade),
-                    time_limit=int(time_limit),
-                    max_attempts=int(request.POST.get('max_attempts', 1)),
-                    show_results=request.POST.get('show_results') == 'on' or request.POST.get('show_results') == 'true',
-                    is_active=request.POST.get('is_active') == 'on' or request.POST.get('is_active') == 'true',
-                    shuffle_questions=request.POST.get('shuffle_questions') == 'on' or request.POST.get('shuffle_questions') == 'true',
-                    created_by=request.user
-                )
+                try:
+                    test = Test.objects.create(**test_kwargs)
+                except Exception as db_error:
+                    # Agar is_paused maydoni muammosi bo'lsa, uni qo'shmasdan qayta urinib ko'rish
+                    error_str = str(db_error).lower()
+                    if 'is_paused' in error_str or 'paused_at' in error_str or 'no such column' in error_str:
+                        # is_paused va paused_at maydonlarini olib tashlash
+                        test_kwargs.pop('is_paused', None)
+                        test_kwargs.pop('paused_at', None)
+                        test = Test.objects.create(**test_kwargs)
+                    else:
+                        # Boshqa xatolik bo'lsa, qayta tashlash
+                        raise
                 
                 # Savollar qo'shish
                 question_texts = request.POST.getlist('question_text[]')

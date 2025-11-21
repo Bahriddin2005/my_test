@@ -109,9 +109,14 @@
                         <h4 class="text-white">
                             <i class="fas fa-question-circle"></i> Savollar
                         </h4>
-                        <button type="button" class="btn btn-success btn-sm" id="addQuestionBtn">
-                            <i class="fas fa-plus"></i> Savol qo'shish
-                        </button>
+                        <div>
+                            <button type="button" class="btn btn-warning btn-sm me-2" id="shuffleQuestionsBtn" title="Savollarni aralashtirish">
+                                <i class="fas fa-random"></i> Savollarni aralashtirish
+                            </button>
+                            <button type="button" class="btn btn-success btn-sm" id="addQuestionBtn">
+                                <i class="fas fa-plus"></i> Savol qo'shish
+                            </button>
+                        </div>
                     </div>
                     
                     <div id="questionsContainer">
@@ -182,7 +187,12 @@
         
         <div class="choices-container">
             <div class="mb-3">
-                <label class="form-label text-white">Javob variantlari</label>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label class="form-label text-white mb-0">Javob variantlari</label>
+                    <button type="button" class="btn btn-outline-warning btn-sm shuffle-choices-btn" title="Variantlarni aralashtirish">
+                        <i class="fas fa-random"></i> Aralashtirish
+                    </button>
+                </div>
                 <div class="choice-items">
                     <div class="choice-item d-flex align-items-center mb-2">
                         <input type="radio" class="form-check-input me-2" name="correct_choice_1" value="0">
@@ -213,6 +223,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Savol qo'shish tugmasi
     document.getElementById('addQuestionBtn').addEventListener('click', function() {
         addQuestion();
+    });
+    
+    // Savollarni aralashtirish tugmasi
+    document.getElementById('shuffleQuestionsBtn').addEventListener('click', function() {
+        shuffleQuestions();
     });
     
     // Birinchi savolni qo'shish
@@ -260,6 +275,14 @@ document.addEventListener('DOMContentLoaded', function() {
         clone.querySelector('.add-choice').addEventListener('click', function() {
             addChoice(this);
         });
+        
+        // Variantlarni aralashtirish tugmasi
+        const shuffleChoicesBtn = clone.querySelector('.shuffle-choices-btn');
+        if (shuffleChoicesBtn) {
+            shuffleChoicesBtn.addEventListener('click', function() {
+                shuffleChoices(this);
+            });
+        }
         
         // Rasm yuklash funksiyasi
         const imageInput = clone.querySelector('.question-image-input');
@@ -362,6 +385,137 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.closest('.choice-item').remove();
             } else {
                 alert('Kamida ikkita variant bo\'lishi kerak!');
+            }
+        });
+    }
+    
+    // Savollarni aralashtirish funksiyasi
+    function shuffleQuestions() {
+        const container = document.getElementById('questionsContainer');
+        const questions = Array.from(container.querySelectorAll('.question-item'));
+        
+        if (questions.length < 2) {
+            alert('Aralashtirish uchun kamida 2 ta savol bo\'lishi kerak!');
+            return;
+        }
+        
+        // Fisher-Yates shuffle algoritmi
+        for (let i = questions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [questions[i], questions[j]] = [questions[j], questions[i]];
+        }
+        
+        // Savollarni yangi tartibda qo'shish
+        questions.forEach(question => {
+            container.appendChild(question);
+        });
+        
+        // Savol raqamlarini yangilash
+        updateQuestionNumbers();
+        
+        // Animatsiya efekti
+        const btn = document.getElementById('shuffleQuestionsBtn');
+        btn.classList.add('btn-success');
+        btn.classList.remove('btn-warning');
+        setTimeout(() => {
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-warning');
+        }, 500);
+    }
+    
+    // Variantlarni aralashtirish funksiyasi
+    function shuffleChoices(button) {
+        const questionItem = button.closest('.question-item');
+        const choiceItems = questionItem.querySelector('.choice-items');
+        const choices = Array.from(choiceItems.querySelectorAll('.choice-item'));
+        
+        if (choices.length < 2) {
+            alert('Aralashtirish uchun kamida 2 ta variant bo\'lishi kerak!');
+            return;
+        }
+        
+        // To'g'ri javobni saqlash
+        const questionNum = questionItem.querySelector('.question-number').textContent;
+        const questionType = questionItem.querySelector('.question-type').value;
+        let correctIndex = -1;
+        
+        if (questionType === 'single_choice') {
+            const correctRadio = questionItem.querySelector(`input[name="correct_choice_${questionNum}"]:checked`);
+            if (correctRadio) {
+                correctIndex = choices.findIndex(choice => choice.contains(correctRadio));
+            }
+        } else if (questionType === 'multiple_choice') {
+            // Multiple choice uchun barcha tanlangan checkbox'larni saqlash
+            const checkedBoxes = Array.from(questionItem.querySelectorAll(`input[name^="correct_choice_${questionNum}_"]:checked`));
+            correctIndex = checkedBoxes.map(box => {
+                const name = box.name;
+                const match = name.match(/_(\d+)$/);
+                return match ? parseInt(match[1]) : -1;
+            });
+        }
+        
+        // Fisher-Yates shuffle algoritmi
+        for (let i = choices.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [choices[i], choices[j]] = [choices[j], choices[i]];
+        }
+        
+        // Variantlarni yangi tartibda qo'shish
+        choices.forEach(choice => {
+            choiceItems.appendChild(choice);
+        });
+        
+        // To'g'ri javobni qayta o'rnatish
+        if (questionType === 'single_choice' && correctIndex >= 0) {
+            const newCorrectIndex = choices.findIndex((choice, idx) => idx === correctIndex);
+            if (newCorrectIndex >= 0) {
+                const newCorrectRadio = choices[newCorrectIndex].querySelector(`input[name="correct_choice_${questionNum}"]`);
+                if (newCorrectRadio) {
+                    newCorrectRadio.checked = true;
+                }
+            }
+        } else if (questionType === 'multiple_choice' && Array.isArray(correctIndex)) {
+            // Multiple choice uchun checkbox'larni qayta o'rnatish
+            correctIndex.forEach((oldIdx, idx) => {
+                if (oldIdx >= 0 && oldIdx < choices.length) {
+                    const newChoice = choices[oldIdx];
+                    const checkbox = newChoice.querySelector(`input[name^="correct_choice_${questionNum}_"]`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                    }
+                }
+            });
+        }
+        
+        // Animatsiya efekti
+        button.classList.add('btn-success');
+        button.classList.remove('btn-outline-warning');
+        setTimeout(() => {
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-warning');
+        }, 500);
+    }
+    
+    // Savol raqamlarini yangilash funksiyasi
+    function updateQuestionNumbers() {
+        const questions = document.querySelectorAll('.question-item');
+        questions.forEach((question, index) => {
+            const questionNum = question.querySelector('.question-number');
+            const oldNum = questionNum.textContent;
+            const newNum = index + 1;
+            
+            if (oldNum !== newNum.toString()) {
+                questionNum.textContent = newNum;
+                
+                // Name attributelarini yangilash
+                const inputs = question.querySelectorAll('input, select, textarea');
+                inputs.forEach(input => {
+                    if (input.name) {
+                        // Eski raqamni yangi raqam bilan almashtirish
+                        input.name = input.name.replace(`_${oldNum}`, `_${newNum}`);
+                        input.name = input.name.replace(`_${oldNum}_`, `_${newNum}_`);
+                    }
+                });
             }
         });
     }

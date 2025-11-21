@@ -113,6 +113,9 @@ body {
             <hr class="my-4">
             <h4 class="mb-3" style="color:#fff;"><i class="fas fa-question-circle"></i> Savollarni Tahrirlash</h4>
             <div class="d-flex justify-content-between align-items-center mb-3">
+                <button type="button" class="btn btn-warning btn-sm me-2" id="shuffleQuestionsBtn" title="Savollarni aralashtirish">
+                    <i class="fas fa-random"></i> Savollarni aralashtirish
+                </button>
                 <button type="button" class="btn btn-success btn-sm" id="addQuestionBtn" data-bs-toggle="modal" data-bs-target="#addQuestionModal">
                     <i class="fas fa-plus"></i> Savol qo'shish
                 </button>
@@ -242,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
         questionHtml += `</select></div>`;
         questionHtml += `<div class='mb-2'><label class='form-label'>Ball</label><input type='number' class='form-control glass-input' name='points' min='0.5' max='10' step='0.5' value='${points}' required></div>`;
         if (questionType !== 'text_answer') {
-            questionHtml += `<div class='choices-container mb-2'><label class='form-label'>Javob variantlari</label><div class='choice-items'>`;
+            questionHtml += `<div class='choices-container mb-2'><div class='d-flex justify-content-between align-items-center mb-2'><label class='form-label mb-0'>Javob variantlari</label><button type='button' class='btn btn-outline-warning btn-sm shuffle-choices-btn' title='Variantlarni aralashtirish'><i class='fas fa-random'></i> Aralashtirish</button></div><div class='choice-items'>`;
             choices.forEach((c, idx) => {
                 questionHtml += `<div class='choice-item d-flex align-items-center mb-2'><input type='checkbox' class='form-check-input me-2' name='is_correct_new_${idx}'${c.is_correct?' checked':''}><input type='text' class='form-control glass-input' name='choice_text_new_${idx}' value='${c.text}' placeholder='Variant ${idx+1}'></div>`;
             });
@@ -303,6 +306,83 @@ document.addEventListener('DOMContentLoaded', function() {
         choiceItems.appendChild(div);
     };
 
+    // Savollarni aralashtirish funksiyasi
+    document.getElementById('shuffleQuestionsBtn').addEventListener('click', function() {
+        shuffleQuestions();
+    });
+    
+    function shuffleQuestions() {
+        const container = document.getElementById('questionsContainer');
+        const questions = Array.from(container.querySelectorAll('.question-item'));
+        
+        if (questions.length < 2) {
+            alert('Aralashtirish uchun kamida 2 ta savol bo\'lishi kerak!');
+            return;
+        }
+        
+        // Fisher-Yates shuffle algoritmi
+        for (let i = questions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [questions[i], questions[j]] = [questions[j], questions[i]];
+        }
+        
+        // Savollarni yangi tartibda qo'shish
+        questions.forEach(question => {
+            container.appendChild(question);
+        });
+        
+        // Animatsiya efekti
+        const btn = document.getElementById('shuffleQuestionsBtn');
+        btn.classList.add('btn-success');
+        btn.classList.remove('btn-warning');
+        setTimeout(() => {
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-warning');
+        }, 500);
+    }
+    
+    // Variantlarni aralashtirish funksiyasi
+    function shuffleChoices(button) {
+        const questionItem = button.closest('.question-item');
+        const choiceItems = questionItem.querySelector('.choice-items');
+        const choices = Array.from(choiceItems.querySelectorAll('.choice-item'));
+        
+        if (choices.length < 2) {
+            alert('Aralashtirish uchun kamida 2 ta variant bo\'lishi kerak!');
+            return;
+        }
+        
+        // To'g'ri javobni saqlash
+        const checkedBoxes = choices.map(choice => {
+            const checkbox = choice.querySelector('input[type="checkbox"]');
+            return checkbox ? checkbox.checked : false;
+        });
+        
+        // Fisher-Yates shuffle algoritmi
+        for (let i = choices.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [choices[i], choices[j]] = [choices[j], choices[i]];
+            [checkedBoxes[i], checkedBoxes[j]] = [checkedBoxes[j], checkedBoxes[i]];
+        }
+        
+        // Variantlarni yangi tartibda qo'shish
+        choices.forEach((choice, idx) => {
+            choiceItems.appendChild(choice);
+            const checkbox = choice.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.checked = checkedBoxes[idx];
+            }
+        });
+        
+        // Animatsiya efekti
+        button.classList.add('btn-success');
+        button.classList.remove('btn-outline-warning');
+        setTimeout(() => {
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-warning');
+        }, 500);
+    }
+    
     // Save test changes
     document.getElementById('saveTestBtn').onclick = function() {
         // Barcha savollarni yig‘ish
