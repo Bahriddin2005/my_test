@@ -247,9 +247,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Savol turini o'zgartirish
-        clone.querySelector('.question-type').addEventListener('change', function() {
+        const questionTypeSelect = clone.querySelector('.question-type');
+        questionTypeSelect.addEventListener('change', function() {
             toggleChoicesContainer(this);
+            updateChoiceInputs(this);
         });
+        
+        // Dastlabki holatni sozlash
+        updateChoiceInputs(questionTypeSelect);
         
         // Variant qo'shish tugmasi
         clone.querySelector('.add-choice').addEventListener('click', function() {
@@ -291,14 +296,57 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    function updateChoiceInputs(select) {
+        const questionItem = select.closest('.question-item');
+        const choiceItems = questionItem.querySelectorAll('.choice-item');
+        const questionType = select.value;
+        const questionNum = questionItem.querySelector('.question-number').textContent;
+        
+        choiceItems.forEach((item, index) => {
+            const radioInput = item.querySelector('input[type="radio"]');
+            const checkboxInput = item.querySelector('input[type="checkbox"]');
+            
+            if (questionType === 'multiple_choice') {
+                // Multiple choice uchun checkbox
+                if (radioInput) {
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'form-check-input me-2';
+                    checkbox.name = `correct_choice_${questionNum}_${index}`;
+                    checkbox.value = 'on';
+                    radioInput.replaceWith(checkbox);
+                }
+            } else if (questionType === 'single_choice') {
+                // Single choice uchun radio
+                if (checkboxInput) {
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.className = 'form-check-input me-2';
+                    radio.name = `correct_choice_${questionNum}`;
+                    radio.value = index.toString();
+                    checkboxInput.replaceWith(radio);
+                }
+            }
+        });
+    }
+    
     function addChoice(button) {
         const choiceItems = button.parentElement.querySelector('.choice-items');
         const choiceCount = choiceItems.children.length;
-        const questionNum = button.closest('.question-item').querySelector('.question-number').textContent;
+        const questionItem = button.closest('.question-item');
+        const questionNum = questionItem.querySelector('.question-number').textContent;
+        const questionType = questionItem.querySelector('.question-type').value;
+        
+        // Input turini aniqlash
+        const inputType = questionType === 'multiple_choice' ? 'checkbox' : 'radio';
+        const inputName = questionType === 'multiple_choice' 
+            ? `correct_choice_${questionNum}_${choiceCount}`
+            : `correct_choice_${questionNum}`;
+        const inputValue = questionType === 'multiple_choice' ? 'on' : choiceCount.toString();
         
         const choiceHtml = `
             <div class="choice-item d-flex align-items-center mb-2">
-                <input type="radio" class="form-check-input me-2" name="correct_choice_${questionNum}" value="${choiceCount}">
+                <input type="${inputType}" class="form-check-input me-2" name="${inputName}" value="${inputValue}">
                 <input type="text" class="form-control glass-input" name="choices_${questionNum}[]" placeholder="Javob varianti ${choiceCount + 1}">
                 <button type="button" class="btn btn-outline-danger btn-sm ms-2 remove-choice">
                     <i class="fas fa-times"></i>
@@ -322,7 +370,72 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('createTestForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
+        // Form ma'lumotlarini tekshirish
+        const title = document.getElementById('testTitle').value.trim();
+        const subject = document.getElementById('testSubject').value.trim();
+        const grade = document.getElementById('testGrade').value;
+        
+        if (!title || !subject || !grade) {
+            alert('Iltimos, barcha majburiy maydonlarni to\'ldiring!');
+            return;
+        }
+        
+        // Savollar mavjudligini tekshirish
+        const questionItems = document.querySelectorAll('.question-item');
+        if (questionItems.length === 0) {
+            alert('Kamida bitta savol qo\'shilishi kerak!');
+            return;
+        }
+        
+        // Har bir savolni tekshirish
+        let hasError = false;
+        let errorMessage = '';
+        
+        questionItems.forEach((item, index) => {
+            const questionText = item.querySelector('textarea[name="question_text[]"]').value.trim();
+            const questionType = item.querySelector('.question-type').value;
+            
+            if (!questionText) {
+                hasError = true;
+                errorMessage = `Savol ${index + 1} matni bo'sh bo'lishi mumkin emas!`;
+                return;
+            }
+            
+            if (questionType !== 'text_answer') {
+                const choices = item.querySelectorAll('input[name^="choices_"]');
+                const validChoices = Array.from(choices).filter(c => c.value.trim()).length;
+                
+                if (validChoices < 2) {
+                    hasError = true;
+                    errorMessage = `Savol ${index + 1} uchun kamida 2 ta javob varianti bo'lishi kerak!`;
+                    return;
+                }
+                
+                // Single choice uchun to'g'ri javob tekshirish
+                if (questionType === 'single_choice') {
+                    const correctChoice = item.querySelector(`input[name="correct_choice_${index + 1}"]:checked`);
+                    if (!correctChoice) {
+                        hasError = true;
+                        errorMessage = `Savol ${index + 1} uchun to'g'ri javob tanlanishi kerak!`;
+                        return;
+                    }
+                }
+            }
+        });
+        
+        if (hasError) {
+            alert(errorMessage);
+            return;
+        }
+        
+        // FormData yaratish
         const formData = new FormData(this);
+        
+        // Loading ko'rsatish
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saqlanmoqda...';
         
         fetch('/tests/create/', {
             method: 'POST',
@@ -335,14 +448,18 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 alert('Test muvaffaqiyatli yaratildi!');
-                window.location.href = '/accounts/dashboard/';
+                window.location.href = '/tests/';
             } else {
                 alert('Xatolik yuz berdi: ' + (data.error || 'Noma\'lum xatolik'));
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Xatolik yuz berdi!');
+            alert('Xatolik yuz berdi: ' + error.message);
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
         });
     });
 });

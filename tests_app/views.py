@@ -993,8 +993,8 @@ def upload_questions(request, test_id):
 
 @login_required
 def create_test_view(request):
-    """Create new test - only for teachers"""
-    if request.user.role != 'teacher':
+    """Create new test - for teachers and admins"""
+    if request.user.role not in ['teacher', 'admin']:
         return JsonResponse({'error': 'Access denied'}, status=403)
     
     if request.method == 'GET':
@@ -1002,17 +1002,37 @@ def create_test_view(request):
     
     if request.method == 'POST':
         try:
+            # Majburiy maydonlarni tekshirish
+            title = request.POST.get('title', '').strip()
+            subject = request.POST.get('subject', '').strip()
+            grade = request.POST.get('grade', '').strip()
+            time_limit = request.POST.get('time_limit', '45').strip()
+            
+            if not title or not subject or not grade:
+                return JsonResponse({
+                    'success': False, 
+                    'error': 'Test nomi, fan va sinf majburiy maydonlar!'
+                }, status=400)
+            
+            # Savollar mavjudligini tekshirish
+            question_texts = request.POST.getlist('question_text[]')
+            if not question_texts or not any(q.strip() for q in question_texts):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Kamida bitta savol qo\'shilishi kerak!'
+                }, status=400)
+            
             with transaction.atomic():
                 # Test yaratish
                 test = Test.objects.create(
-                    title=request.POST.get('title'),
-                    description=request.POST.get('description', ''),
-                    subject=request.POST.get('subject'),
-                    grade=int(request.POST.get('grade')),
-                    time_limit=int(request.POST.get('time_limit', 45)),
+                    title=title,
+                    description=request.POST.get('description', '').strip(),
+                    subject=subject,
+                    grade=int(grade),
+                    time_limit=int(time_limit),
                     max_attempts=int(request.POST.get('max_attempts', 1)),
-                    show_results=bool(request.POST.get('show_results')),
-                    is_active=bool(request.POST.get('is_active')),
+                    show_results=request.POST.get('show_results') == 'on' or request.POST.get('show_results') == 'true',
+                    is_active=request.POST.get('is_active') == 'on' or request.POST.get('is_active') == 'true',
                     created_by=request.user
                 )
                 
@@ -1021,36 +1041,67 @@ def create_test_view(request):
                 question_types = request.POST.getlist('question_type[]')
                 points_list = request.POST.getlist('points[]')
                 explanations = request.POST.getlist('explanation[]')
+                question_images = request.FILES.getlist('question_image[]')
                 
+                question_order = 0
                 for i, question_text in enumerate(question_texts):
                     if not question_text.strip():
                         continue
                     
+                    question_order += 1
                     question = Question.objects.create(
                         test=test,
-                        question_text=question_text,
-                        question_type=question_types[i],
-                        points=float(points_list[i]) if points_list[i] else 1.0,
-                        order=i + 1,
-                        explanation=explanations[i] if i < len(explanations) else ''
+                        question_text=question_text.strip(),
+                        question_type=question_types[i] if i < len(question_types) else 'single_choice',
+                        points=float(points_list[i]) if i < len(points_list) and points_list[i] else 1.0,
+                        order=question_order,
+                        explanation=explanations[i].strip() if i < len(explanations) and explanations[i] else ''
                     )
                     
+                    # Rasm yuklash
+                    if i < len(question_images) and question_images[i]:
+                        question.image = question_images[i]
+                        question.save()
+                    
                     # Javob variantlarini qo'shish
-                    if question_types[i] != 'text_answer':
+                    question_type = question_types[i] if i < len(question_types) else 'single_choice'
+                    if question_type != 'text_answer':
                         choices_key = f'choices_{i+1}[]'
                         correct_key = f'correct_choice_{i+1}'
                         
                         choices = request.POST.getlist(choices_key)
-                        correct_index = request.POST.get(correct_key)
+                        correct_index = request.POST.get(correct_key, '')
+                        
+                        # Kamida 2 ta variant bo'lishi kerak
+                        valid_choices = [c.strip() for c in choices if c.strip()]
+                        if len(valid_choices) < 2:
+                            raise ValueError(f'Savol {question_order} uchun kamida 2 ta javob varianti bo\'lishi kerak!')
+                        
+                        # To'g'ri javobni tekshirish
+                        if question_type == 'single_choice':
+                            if not correct_index or correct_index == '':
+                                raise ValueError(f'Savol {question_order} uchun to\'g\'ri javob tanlanishi kerak!')
                         
                         for j, choice_text in enumerate(choices):
                             if choice_text.strip():
-                                is_correct = str(j) == correct_index
+                                if question_type == 'single_choice':
+                                    is_correct = str(j) == correct_index
+                                else:  # multiple_choice
+                                    # Multiple choice uchun checkbox'lar ishlatiladi
+                                    checkbox_name = f'correct_choice_{i+1}_{j}'
+                                    is_correct = request.POST.get(checkbox_name) == 'on'
+                                
                                 Choice.objects.create(
                                     question=question,
-                                    choice_text=choice_text,
+                                    choice_text=choice_text.strip(),
                                     is_correct=is_correct
                                 )
+                        
+                        # Single choice uchun kamida bitta to'g'ri javob bo'lishi kerak
+                        if question_type == 'single_choice':
+                            has_correct = Choice.objects.filter(question=question, is_correct=True).exists()
+                            if not has_correct:
+                                raise ValueError(f'Savol {question_order} uchun kamida bitta to\'g\'ri javob bo\'lishi kerak!')
                 
                 return JsonResponse({
                     'success': True, 
@@ -1058,8 +1109,13 @@ def create_test_view(request):
                     'test_id': test.id
                 })
                 
+        except ValueError as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f'Error creating test: {str(e)}', exc_info=True)
+            return JsonResponse({'success': False, 'error': f'Xatolik: {str(e)}'}, status=500)
 
 @login_required
 def test_info_view(request, test_id):
