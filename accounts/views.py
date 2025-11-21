@@ -150,47 +150,125 @@ def dashboard_view(request):
             logger.error(f'Error fetching test count in dashboard_view: {str(e)}')
             context['total_tests'] = 0
     elif request.user.role == 'student':
-        # O'quvchi uchun natijalarni olish
-        test_results = TestResult.objects.filter(
-            attempt__student=request.user
-        ).select_related('attempt', 'attempt__test').order_by('-attempt__started_at')[:5]
-        
-        context['recent_results'] = []
-        for result in test_results:
-            # Grade ni hisoblash - безопасная версия
+        # O'quvchi uchun natijalarni olish - xavfsiz versiya (is_paused maydonini tekshirmaslik uchun)
+        try:
+            # Raw SQL yordamida TestResult ID'larni olish
+            result_ids = []
             try:
-                if (result.attempt and 
-                    result.attempt.score is not None and 
-                    result.attempt.total_points is not None and 
-                    result.attempt.total_points > 0):
-                    percentage = (result.attempt.score / result.attempt.total_points * 100)
-                else:
+                with connection.cursor() as cursor:
+                    cursor.execute("""
+                        SELECT tr.id FROM tests_app_testresult tr
+                        INNER JOIN tests_app_testattempt ta ON tr.attempt_id = ta.id
+                        WHERE ta.student_id = %s
+                        ORDER BY ta.started_at DESC
+                        LIMIT 5
+                    """, [request.user.id])
+                    result_ids = [row[0] for row in cursor.fetchall()]
+            except Exception as db_error:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f'Error fetching result IDs in dashboard_view: {str(db_error)}')
+                result_ids = []
+            
+            # TestResult obyektlarini xavfsiz yuklash
+            test_results = []
+            for result_id in result_ids:
+                try:
+                    result = TestResult.objects.select_related('attempt').get(id=result_id)
+                    # Test nomini raw SQL yordamida olish (is_paused maydonini tekshirmaslik uchun)
+                    test_id = result.attempt.test_id
+                    try:
+                        with connection.cursor() as cursor:
+                            cursor.execute("SELECT id, title FROM tests_app_test WHERE id = %s", [test_id])
+                            row = cursor.fetchone()
+                            if row:
+                                test_title = row[1]
+                                result.attempt._test_cache = type('Test', (), {'id': row[0], 'title': test_title})()
+                                test_results.append(result)
+                    except Exception:
+                        continue
+                except Exception:
+                    continue
+            
+            context['recent_results'] = []
+            for result in test_results:
+                # Grade ni hisoblash - безопасная версия
+                try:
+                    if (result.attempt and 
+                        result.attempt.score is not None and 
+                        result.attempt.total_points is not None and 
+                        result.attempt.total_points > 0):
+                        percentage = (result.attempt.score / result.attempt.total_points * 100)
+                    else:
+                        percentage = 0
+                except (TypeError, ZeroDivisionError):
                     percentage = 0
-            except (TypeError, ZeroDivisionError):
-                percentage = 0
+                    
+                if percentage >= 81:
+                    grade = "A'lo"
+                elif percentage >= 61:
+                    grade = 'Yaxshi'
+                elif percentage >= 31:
+                    grade = 'Qoniqarli'
+                else:
+                    grade = 'Qoniqarsiz'
                 
-            if percentage >= 81:
-                grade = "A'lo"
-            elif percentage >= 61:
-                grade = 'Yaxshi'
-            elif percentage >= 31:
-                grade = 'Qoniqarli'
-            else:
-                grade = 'Qoniqarsiz'
-                
-            context['recent_results'].append({
-                'test_name': result.attempt.test.title,
-                'score': result.attempt.score,
-                'max_score': result.attempt.total_points,
-                'percentage': percentage,
-                'grade': grade,
-                'created_at': result.attempt.started_at,
-                'test_id': result.attempt.test.id
-            })
+                # Test nomini xavfsiz olish
+                test_title = getattr(result.attempt._test_cache, 'title', 'Noma\'lum test') if hasattr(result.attempt, '_test_cache') else 'Noma\'lum test'
+                test_id = getattr(result.attempt._test_cache, 'id', 0) if hasattr(result.attempt, '_test_cache') else 0
+                    
+                context['recent_results'].append({
+                    'test_name': test_title,
+                    'score': result.attempt.score,
+                    'max_score': result.attempt.total_points,
+                    'percentage': percentage,
+                    'grade': grade,
+                    'created_at': result.attempt.started_at,
+                    'test_id': test_id
+                })
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f'Error in dashboard_view (student results): {str(e)}', exc_info=True)
+            context['recent_results'] = []
         
-        # Umumiy statistika
-        all_results = TestResult.objects.filter(attempt__student=request.user)
-        context['total_tests'] = all_results.count()
+        # Umumiy statistika - xavfsiz versiya
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT COUNT(*) FROM tests_app_testresult tr
+                    INNER JOIN tests_app_testattempt ta ON tr.attempt_id = ta.id
+                    WHERE ta.student_id = %s
+                """, [request.user.id])
+                context['total_tests'] = cursor.fetchone()[0]
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f'Error fetching total tests count in dashboard_view: {str(e)}')
+            context['total_tests'] = 0
+        
+        # all_results ni xavfsiz yuklash
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT tr.id FROM tests_app_testresult tr
+                    INNER JOIN tests_app_testattempt ta ON tr.attempt_id = ta.id
+                    WHERE ta.student_id = %s
+                """, [request.user.id])
+                result_ids = [row[0] for row in cursor.fetchall()]
+            
+            all_results = []
+            for result_id in result_ids:
+                try:
+                    result = TestResult.objects.select_related('attempt').get(id=result_id)
+                    all_results.append(result)
+                except Exception:
+                    continue
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f'Error fetching all results in dashboard_view: {str(e)}')
+            all_results = []
         
         if all_results:
             # Безопасное вычисление среднего балла
@@ -237,9 +315,24 @@ def dashboard_view(request):
                     best_grade = 'Qoniqarli'
                 else:
                     best_grade = 'Qoniqarsiz'
+                
+                # Test nomini xavfsiz olish (raw SQL yordamida)
+                test_title = 'Noma\'lum test'
+                try:
+                    if hasattr(best_result.attempt, '_test_cache'):
+                        test_title = getattr(best_result.attempt._test_cache, 'title', 'Noma\'lum test')
+                    else:
+                        test_id = best_result.attempt.test_id
+                        with connection.cursor() as cursor:
+                            cursor.execute("SELECT title FROM tests_app_test WHERE id = %s", [test_id])
+                            row = cursor.fetchone()
+                            if row:
+                                test_title = row[0]
+                except Exception:
+                    pass
                     
                 context['best_result'] = {
-                    'test_name': best_result.attempt.test.title,
+                    'test_name': test_title,
                     'score': best_result.attempt.score,
                     'max_score': best_result.attempt.total_points,
                     'percentage': best_percentage,
