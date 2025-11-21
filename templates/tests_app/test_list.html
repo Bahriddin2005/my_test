@@ -407,37 +407,46 @@ function displayTests(tests, userRole = 'student') {
             if (clone.querySelector('.created-date')) {
                 clone.querySelector('.created-date').textContent = formatDate(test.created_at);
             }
-        
-        // Set test ID
-        clone.querySelector('.test-card').setAttribute('data-test-id', test.id);
-        
-        // Configure based on user role
-        const startBtn = clone.querySelector('.start-test-btn');
-        const continueBtn = clone.querySelector('.continue-test-btn');
-        const resultsBtn = clone.querySelector('.view-results-btn');
-        const completedBadge = clone.querySelector('.completed-badge');
-        const progressBar = clone.querySelector('.test-progress');
-        
-        if (userRole === 'teacher') {
-            // Teacher view - show manage buttons
-            startBtn.classList.add('d-none');
-            continueBtn.classList.add('d-none');
-            completedBadge.classList.add('d-none');
             
-            // Always show results button for teachers
-            resultsBtn.classList.remove('d-none');
-            resultsBtn.innerHTML = '<i class="fas fa-chart-line me-2"></i>Natijalarni Ko\'rish';
-            
-            // Show test stats if available
-            if (test.attempt_count > 0) {
-                progressBar.classList.remove('d-none');
-                progressBar.querySelector('.progress-bar').style.width = '100%';
-                progressBar.querySelector('.progress-bar').textContent = test.attempt_count + ' ta urinish';
-                progressBar.querySelector('.progress-bar').classList.remove('bg-success');
-                progressBar.querySelector('.progress-bar').classList.add('bg-info');
+            // Set test ID
+            if (clone.querySelector('.test-card')) {
+                clone.querySelector('.test-card').setAttribute('data-test-id', test.id || 0);
             }
             
-            clone.querySelector('.attempts-left').textContent = 'Boshqarish';
+            // Configure based on user role
+            const startBtn = clone.querySelector('.start-test-btn');
+            const continueBtn = clone.querySelector('.continue-test-btn');
+            const resultsBtn = clone.querySelector('.view-results-btn');
+            const completedBadge = clone.querySelector('.completed-badge');
+            const progressBar = clone.querySelector('.test-progress');
+            
+            if (userRole === 'teacher') {
+                // Teacher view - show manage buttons
+                if (startBtn) startBtn.classList.add('d-none');
+                if (continueBtn) continueBtn.classList.add('d-none');
+                if (completedBadge) completedBadge.classList.add('d-none');
+                
+                // Always show results button for teachers
+                if (resultsBtn) {
+                    resultsBtn.classList.remove('d-none');
+                    resultsBtn.innerHTML = '<i class="fas fa-chart-line me-2"></i>Natijalarni Ko\'rish';
+                }
+                
+                // Show test stats if available
+                if (progressBar && test.attempt_count > 0) {
+                    progressBar.classList.remove('d-none');
+                    const progressBarInner = progressBar.querySelector('.progress-bar');
+                    if (progressBarInner) {
+                        progressBarInner.style.width = '100%';
+                        progressBarInner.textContent = test.attempt_count + ' ta urinish';
+                        progressBarInner.classList.remove('bg-success');
+                        progressBarInner.classList.add('bg-info');
+                    }
+                }
+            
+                if (clone.querySelector('.attempts-left')) {
+                    clone.querySelector('.attempts-left').textContent = 'Boshqarish';
+                }
 
                 // Add Edit Test button
                 const editBtn = document.createElement('button');
@@ -447,67 +456,94 @@ function displayTests(tests, userRole = 'student') {
                     window.location.href = `/tests/${test.id}/edit/`;
                 };
                 // Insert before results button
-                resultsBtn.parentNode.insertBefore(editBtn, resultsBtn);
-        } else if (userRole === 'admin') {
-            // Admin view - show all tests with management options
-            startBtn.classList.add('d-none');
-            continueBtn.classList.add('d-none');
-            completedBadge.classList.add('d-none');
-            
-            // Show results button for admin
-            resultsBtn.classList.remove('d-none');
-            resultsBtn.innerHTML = '<i class="fas fa-chart-line me-2"></i>Natijalarni Ko\'rish';
-            
-            // Show test stats
-            if (test.attempt_count > 0) {
-                progressBar.classList.remove('d-none');
-                progressBar.querySelector('.progress-bar').style.width = '100%';
-                progressBar.querySelector('.progress-bar').textContent = test.attempt_count + ' ta urinish';
-                progressBar.querySelector('.progress-bar').classList.remove('bg-success');
-                progressBar.querySelector('.progress-bar').classList.add('bg-info');
-            }
-            
-            clone.querySelector('.attempts-left').textContent = test.attempt_count + ' ta urinish';
-            
-            // Add status badge
-            if (!test.is_active) {
-                const inactiveBadge = document.createElement('span');
-                inactiveBadge.className = 'badge bg-danger ms-2';
-                inactiveBadge.textContent = 'Nofaol';
-                clone.querySelector('.subject-badge').parentNode.appendChild(inactiveBadge);
-            }
-        } else {
-            // Student view - original logic
-            if (test.has_attempted) {
-                if (test.attempt_score !== null) {
-                    // Test completed
-                    startBtn.classList.add('d-none');
-                    completedBadge.classList.remove('d-none');
+                if (resultsBtn && resultsBtn.parentNode) {
+                    resultsBtn.parentNode.insertBefore(editBtn, resultsBtn);
+                }
+            } else if (userRole === 'admin') {
+                // Admin view - show all tests with management options
+                if (startBtn) startBtn.classList.add('d-none');
+                if (continueBtn) continueBtn.classList.add('d-none');
+                if (completedBadge) completedBadge.classList.add('d-none');
+                
+                // Show results button for admin
+                if (resultsBtn) {
                     resultsBtn.classList.remove('d-none');
-                    
-                    // Show progress
+                    resultsBtn.innerHTML = '<i class="fas fa-chart-line me-2"></i>Natijalarni Ko\'rish';
+                }
+                
+                // Show test stats
+                if (progressBar && test.attempt_count > 0) {
                     progressBar.classList.remove('d-none');
-                    progressBar.querySelector('.progress-bar').style.width = test.attempt_score + '%';
-                    progressBar.querySelector('.progress-bar').textContent = test.attempt_score + '%';
-                    
-                    clone.querySelector('.attempts-left').textContent = 'Tugallangan';
-                } else {
-                    // Test in progress
-                    startBtn.classList.add('d-none');
-                    continueBtn.classList.remove('d-none');
-                    clone.querySelector('.attempts-left').textContent = 'Jarayonda';
+                    const progressBarInner = progressBar.querySelector('.progress-bar');
+                    if (progressBarInner) {
+                        progressBarInner.style.width = '100%';
+                        progressBarInner.textContent = test.attempt_count + ' ta urinish';
+                        progressBarInner.classList.remove('bg-success');
+                        progressBarInner.classList.add('bg-info');
+                    }
+                }
+                
+                if (clone.querySelector('.attempts-left')) {
+                    clone.querySelector('.attempts-left').textContent = test.attempt_count + ' ta urinish';
+                }
+                
+                // Add status badge
+                if (!test.is_active) {
+                    const subjectBadge = clone.querySelector('.subject-badge');
+                    if (subjectBadge && subjectBadge.parentNode) {
+                        const inactiveBadge = document.createElement('span');
+                        inactiveBadge.className = 'badge bg-danger ms-2';
+                        inactiveBadge.textContent = 'Nofaol';
+                        subjectBadge.parentNode.appendChild(inactiveBadge);
+                    }
                 }
             } else {
-                // Test available
-                if (test.can_attempt) {
-                    clone.querySelector('.attempts-left').textContent = test.max_attempts + ' ta';
+                // Student view - original logic
+                if (test.has_attempted) {
+                    if (test.attempt_score !== null) {
+                        // Test completed
+                        if (startBtn) startBtn.classList.add('d-none');
+                        if (completedBadge) completedBadge.classList.remove('d-none');
+                        if (resultsBtn) resultsBtn.classList.remove('d-none');
+                        
+                        // Show progress
+                        if (progressBar) {
+                            progressBar.classList.remove('d-none');
+                            const progressBarInner = progressBar.querySelector('.progress-bar');
+                            if (progressBarInner) {
+                                progressBarInner.style.width = test.attempt_score + '%';
+                                progressBarInner.textContent = test.attempt_score + '%';
+                            }
+                        }
+                        
+                        if (clone.querySelector('.attempts-left')) {
+                            clone.querySelector('.attempts-left').textContent = 'Tugallangan';
+                        }
+                    } else {
+                        // Test in progress
+                        if (startBtn) startBtn.classList.add('d-none');
+                        if (continueBtn) continueBtn.classList.remove('d-none');
+                        if (clone.querySelector('.attempts-left')) {
+                            clone.querySelector('.attempts-left').textContent = 'Jarayonda';
+                        }
+                    }
                 } else {
-                    startBtn.disabled = true;
-                    startBtn.innerHTML = '<i class="fas fa-lock me-2"></i>Mavjud emas';
-                    clone.querySelector('.attempts-left').textContent = '0 ta';
+                    // Test available
+                    if (test.can_attempt) {
+                        if (clone.querySelector('.attempts-left')) {
+                            clone.querySelector('.attempts-left').textContent = test.max_attempts + ' ta';
+                        }
+                    } else {
+                        if (startBtn) {
+                            startBtn.disabled = true;
+                            startBtn.innerHTML = '<i class="fas fa-lock me-2"></i>Mavjud emas';
+                        }
+                        if (clone.querySelector('.attempts-left')) {
+                            clone.querySelector('.attempts-left').textContent = '0 ta';
+                        }
+                    }
                 }
             }
-        }
         
             // Add animation delay
             if (clone.querySelector('.test-item')) {
