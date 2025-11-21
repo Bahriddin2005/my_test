@@ -1057,8 +1057,8 @@ def create_test_view(request):
                     'error': 'Kamida bitta savol qo\'shilishi kerak!'
                 }, status=400)
             
+            # Test yaratish va savollar qo'shish - bitta transaction.atomic() blokida
             with transaction.atomic():
-                # Test yaratish - is_paused maydonini xavfsiz qo'shish
                 # Asosiy maydonlar
                 test_kwargs = {
                     'title': title,
@@ -1088,6 +1088,7 @@ def create_test_view(request):
                     pass
                 
                 # Test yaratish
+                test = None
                 try:
                     test = Test.objects.create(**test_kwargs)
                 except Exception as db_error:
@@ -1097,10 +1098,16 @@ def create_test_view(request):
                         # is_paused va paused_at maydonlarini olib tashlash
                         test_kwargs.pop('is_paused', None)
                         test_kwargs.pop('paused_at', None)
+                        # Transaction'ni saqlab qolish va qayta urinib ko'rish
+                        # Bu yerda transaction rollback qilinmaydi, chunki biz hali ham atomic blok ichidamiz
                         test = Test.objects.create(**test_kwargs)
                     else:
-                        # Boshqa xatolik bo'lsa, qayta tashlash
+                        # Boshqa xatolik bo'lsa, qayta tashlash (transaction avtomatik rollback qilinadi)
                         raise
+                
+                # Agar test yaratilmagan bo'lsa, xatolik qaytarish
+                if not test:
+                    raise ValueError('Test yaratib bo\'lmadi')
                 
                 # Savollar qo'shish
                 question_texts = request.POST.getlist('question_text[]')
