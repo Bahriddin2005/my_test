@@ -631,12 +631,23 @@ def take_test_view(request, test_id):
         else:
             attempt = existing_attempt
         
-        questions = test.questions.all().order_by('order')
+        # Barcha savollarni olish
+        all_questions = list(test.questions.all())
+        
+        # Agar 50 dan ko'p savol bo'lsa, random 50 tasini tanlab olish
+        MAX_QUESTIONS = 50
+        if len(all_questions) > MAX_QUESTIONS:
+            # Random 50 ta savolni tanlab olish (har safar turli savollar)
+            selected_questions = random.sample(all_questions, MAX_QUESTIONS)
+        else:
+            selected_questions = all_questions
+        
+        # Savollarni aralashtirish (agar shuffle_questions True bo'lsa)
         if test.shuffle_questions:
-            questions = questions.order_by('?')
+            random.shuffle(selected_questions)
         
         questions_data = []
-        for question in questions:
+        for question in selected_questions:
             q_data = {
                 'id': question.id,
                 'question_text': question.question_text,
@@ -646,10 +657,14 @@ def take_test_view(request, test_id):
             }
             
             if question.question_type in ['single_choice', 'multiple_choice']:
+                # Variantlarni olish va aralashtirish (har safar turli tartibda)
+                choices = list(question.choices.all())
+                random.shuffle(choices)  # Variantlarni aralashtirish
+                
                 q_data['choices'] = [{
                     'id': choice.id,
                     'text': choice.choice_text
-                } for choice in question.choices.all()]
+                } for choice in choices]
             
             questions_data.append(q_data)
         
@@ -734,15 +749,36 @@ def finish_test(request, attempt_id):
         incorrect_answers = 0
         unanswered = 0
         
-        for question in attempt.test.questions.all():
-            answer = Answer.objects.filter(attempt=attempt, question=question).first()
-            if answer:
+        # Faqat tanlangan savollarni tekshirish (Answer modelida saqlangan savollar)
+        answered_questions = Answer.objects.filter(attempt=attempt).select_related('question')
+        answered_question_ids = set(answer.question_id for answer in answered_questions)
+        
+        # Barcha test savollarini olish
+        all_test_questions_count = attempt.test.questions.count()
+        
+        # Agar 50 dan ko'p savol bo'lsa, faqat javob berilgan savollarni tekshirish
+        # Aks holda barcha savollarni tekshirish
+        if all_test_questions_count > 50:
+            # Faqat javob berilgan savollarni tekshirish
+            for answer in answered_questions:
                 if answer.is_correct():
                     correct_answers += 1
                 else:
                     incorrect_answers += 1
-            else:
-                unanswered += 1
+            
+            # Javob berilmagan savollar soni (faqat tanlangan 50 ta savoldan)
+            unanswered = 50 - len(answered_question_ids)
+        else:
+            # Barcha savollarni tekshirish
+            for question in attempt.test.questions.all():
+                answer = Answer.objects.filter(attempt=attempt, question=question).first()
+                if answer:
+                    if answer.is_correct():
+                        correct_answers += 1
+                    else:
+                        incorrect_answers += 1
+                else:
+                    unanswered += 1
         
         test_result = TestResult.objects.create(
             attempt=attempt,
@@ -1033,6 +1069,7 @@ def create_test_view(request):
                     max_attempts=int(request.POST.get('max_attempts', 1)),
                     show_results=request.POST.get('show_results') == 'on' or request.POST.get('show_results') == 'true',
                     is_active=request.POST.get('is_active') == 'on' or request.POST.get('is_active') == 'true',
+                    shuffle_questions=request.POST.get('shuffle_questions') == 'on' or request.POST.get('shuffle_questions') == 'true',
                     created_by=request.user
                 )
                 
