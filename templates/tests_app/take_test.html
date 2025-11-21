@@ -327,6 +327,10 @@
                 testData = data;
                 attemptId = data.attempt_id;
                 questions = data.questions;
+                
+                // Savollarni va variantlarni avtomatik aralashtirish (frontend'da ham)
+                shuffleQuestionsAndChoices();
+                
                 timeLimit = data.time_limit * 60; // Convert to seconds
                 startTime = new Date(data.started_at);
                 
@@ -355,6 +359,26 @@
         }
     }
 
+    // Savollarni va variantlarni aralashtirish funksiyasi
+    function shuffleQuestionsAndChoices() {
+        // Savollarni aralashtirish (Fisher-Yates shuffle)
+        for (let i = questions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [questions[i], questions[j]] = [questions[j], questions[i]];
+        }
+        
+        // Har bir savolning variantlarini aralashtirish
+        questions.forEach(question => {
+            if (question.choices && question.choices.length > 1) {
+                // Fisher-Yates shuffle algoritmi
+                for (let i = question.choices.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [question.choices[i], question.choices[j]] = [question.choices[j], question.choices[i]];
+                }
+            }
+        });
+    }
+    
     function initializeTest() {
         // Hide loading, show test
         document.getElementById('loadingTest').classList.add('d-none');

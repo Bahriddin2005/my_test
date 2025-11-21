@@ -642,9 +642,8 @@ def take_test_view(request, test_id):
         else:
             selected_questions = all_questions
         
-        # Savollarni aralashtirish (agar shuffle_questions True bo'lsa)
-        if test.shuffle_questions:
-            random.shuffle(selected_questions)
+        # Savollarni HAR DOIM aralashtirish (avtomatik)
+        random.shuffle(selected_questions)
         
         questions_data = []
         for question in selected_questions:
@@ -657,9 +656,9 @@ def take_test_view(request, test_id):
             }
             
             if question.question_type in ['single_choice', 'multiple_choice']:
-                # Variantlarni olish va aralashtirish (har safar turli tartibda)
+                # Variantlarni olish va HAR DOIM aralashtirish (har safar turli tartibda)
                 choices = list(question.choices.all())
-                random.shuffle(choices)  # Variantlarni aralashtirish
+                random.shuffle(choices)  # Variantlarni avtomatik aralashtirish
                 
                 q_data['choices'] = [{
                     'id': choice.id,
