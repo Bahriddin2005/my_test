@@ -109,6 +109,7 @@
                 <div class="col-md-2">
                     <select class="form-select bg-transparent border-secondary text-white" id="gradeFilter">
                         <option value="">Barcha sinflar</option>
+                        <option value="4">4-sinf</option>
                         <option value="5">5-sinf</option>
                         <option value="6">6-sinf</option>
                         <option value="7">7-sinf</option>
@@ -270,7 +271,10 @@ async function loadTests() {
         
         if (response.ok) {
             const data = await response.json();
+            console.log('Loaded tests data:', data); // Debug log
             currentUserRole = data.user_role || currentUserRole;
+            console.log('User role:', currentUserRole); // Debug log
+            console.log('Tests count:', data.tests ? data.tests.length : 0); // Debug log
             displayTests(data.tests || [], currentUserRole);
         } else {
             const errorData = await response.json().catch(() => ({}));
@@ -334,6 +338,10 @@ function displayTests(tests, userRole = 'student') {
         return;
     }
     
+    console.log('Displaying tests:', tests); // Debug log
+    console.log('Tests array length:', tests ? tests.length : 0); // Debug log
+    console.log('User role:', userRole); // Debug log
+    
     if (!tests || tests.length === 0) {
         let message = 'Hozircha testlar mavjud emas';
         if (userRole === 'teacher') {
@@ -349,6 +357,9 @@ function displayTests(tests, userRole = 'student') {
                 <i class="fas fa-clipboard-list fa-3x text-info mb-3"></i>
                 <h4 class="text-white">Testlar topilmadi</h4>
                 <p class="text-white-50">${message}</p>
+                <button class="btn btn-primary mt-3" onclick="loadTests()">
+                    <i class="fas fa-redo me-2"></i>Qayta yuklash
+                </button>
             </div>
         `;
         return;
