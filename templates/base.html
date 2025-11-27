@@ -90,9 +90,6 @@
             50% { transform: translateY(-20px) rotate(180deg); }
         }
 
-            transform: translateY(-2px);
-        }
-
         .nav-link::after {
             content: '';
             position: absolute;
@@ -792,7 +789,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'accounts:logout' %}" onclick="logout()">
+                            <a class="nav-link" href="{% url 'accounts:logout' %}" onclick="event.preventDefault(); logout();">
                                 <i class="fas fa-sign-out-alt me-1"></i>Chiqish
                             </a>
                         </li>
